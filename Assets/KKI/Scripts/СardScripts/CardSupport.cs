@@ -9,5 +9,4 @@ public class CardSupport : Card
 
     [SerializeReference, SubclassSelector]
     public BaseSupport—ardAbilityData support—ardAbilityData;
-
 }

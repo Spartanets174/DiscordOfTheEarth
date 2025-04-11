@@ -819,11 +819,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: 
+  cloudProjectId: 59a986f9-e95e-44a8-8986-d956660a50d0
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: DiscordOfEarthGame
+  organizationId: spartanets174
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 

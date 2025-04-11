@@ -8,10 +8,13 @@ public class PlayerData : ScriptableObject
 {
     public List<CharacterCard> allCharCards;
     public List<CardSupport> allSupportCards;
+
     public List<CharacterCard> allShopCharCards;
     public List<CardSupport> allShopSupportCards;
+
     public List<CharacterCard> allUserCharCards;
     public List<CardSupport> allUserSupportCards;
+
     public List<CharacterCard> deckUserCharCards;
     public List<CardSupport> deckUserSupportCards;
 

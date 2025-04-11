@@ -26,7 +26,7 @@ public class ChangeConncetionInfo : MonoBehaviour, ILoadable
     private Button reopenConnectionButton;
 
     [SerializeField]
-    private DbManager dbManager;
+    private APlayerRepository dbManager;
 
     public void Init()
     {

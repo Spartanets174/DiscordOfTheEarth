@@ -23,7 +23,7 @@ public class SettingsController : MonoBehaviour, ILoadable
     [SerializeField]
     private int maxFPS = 60;
 
-    private DbManager dbManager;
+    private APlayerRepository dbManager;
 
     private Dictionary<int, Vector2> resolutions = new();
     public Dictionary<int, Vector2> Resolutions => resolutions;
@@ -39,7 +39,7 @@ public class SettingsController : MonoBehaviour, ILoadable
     {
         Application.targetFrameRate = maxFPS;
         CanPause = true;
-        dbManager = FindObjectOfType<DbManager>();
+        dbManager = FindObjectOfType<APlayerRepository>();
         outlineInteractableObjects = FindObjectsOfType<OutlineInteractableObject>().ToList();
         resolutions.Clear();
         int count = 0;
@@ -96,6 +96,7 @@ public class SettingsController : MonoBehaviour, ILoadable
     {
         dbManager.SavePlayer();
         SaveSystem.DeletePlayer();
+        LocalPlayerSaveSystem.DeletePlayer();
         SceneController.ToCreatePlayer();
     }
 

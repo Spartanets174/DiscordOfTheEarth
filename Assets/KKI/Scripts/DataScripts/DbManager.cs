@@ -2,81 +2,12 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public static class ConnectionInfo
+public class DbManager : APlayerRepository
 {
-    public static ConnectionData ConnectionData { get; private set; } = new ConnectionData();
-
-    public static void ChangeConncetionInfo(ConnectionData connectionData)
-    {
-        ConnectionData = connectionData;
-        PlayerPrefs.SetString("ip", ConnectionData.ip);
-        PlayerPrefs.SetString("port", ConnectionData.port);
-        PlayerPrefs.SetString("uid", ConnectionData.uid);
-        PlayerPrefs.SetString("pwd", ConnectionData.pwd);
-        PlayerPrefs.SetString("database", ConnectionData.database);
-
-        Debug.Log("ip: "+PlayerPrefs.GetString("ip"));
-        Debug.Log("port: " + PlayerPrefs.GetString("port"));
-        Debug.Log("uid: " + PlayerPrefs.GetString("uid"));
-        Debug.Log("pwd: " + PlayerPrefs.GetString("pwd"));
-        Debug.Log("database " + PlayerPrefs.GetString("database"));
-    }
-}
-[Serializable]
-public class ConnectionData
-{
-    public string ip = "127.0.0.1";
-    public string port = "3306";
-    public string uid = "root";
-    public string pwd = "12345";
-    public string database = "gamedb";
-
-    public ConnectionData()
-    {
-
-    }
-
-    public ConnectionData(string ip, string port, string uid, string pwd, string database)
-    {
-        this.ip = ip;
-        this.port = port;
-        this.uid = uid;
-        this.pwd = pwd;
-        this.database = database;
-    }
-}
-public static class Hashing
-{
-    public static string ToSHA256(string s)
-    {
-        using var sha256 = SHA256.Create();
-        byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(s));
-        var sb = new StringBuilder();
-        for (int i = 0; i < bytes.Length; i++)
-        {
-            sb.Append(bytes[i].ToString("x2"));
-        }
-        return sb.ToString();
-    }
-}
-
-public class DbManager : MonoBehaviour
-{
-    public static string connectionString;
-
-    public static MySqlConnection con;
-
-    [SerializeField] private PlayerData playerData;
     [SerializeField] private ConnectionData connectionData;
-    public PlayerData PlayerData => playerData;
-
-    private bool m_isConnected;
-    public bool IsConnected => m_isConnected;
     public void Awake()
     {
         if (PlayerPrefs.GetString("isFirstConn") == string.Empty)
@@ -96,7 +27,7 @@ public class DbManager : MonoBehaviour
         OpenCon();
     }
 
-    public void OpenCon()
+    public override void OpenCon()
     {
         connectionString = $"server = {ConnectionInfo.ConnectionData.ip}; port = {ConnectionInfo.ConnectionData.port}; uid = {ConnectionInfo.ConnectionData.uid}; pwd = {ConnectionInfo.ConnectionData.pwd}; Database = {ConnectionInfo.ConnectionData.database};";
         m_isConnected = true;
@@ -113,14 +44,8 @@ public class DbManager : MonoBehaviour
         }
     }
 
-    private void OnApplicationQuit()
-    {
-        SavePlayer();
 
-        CloseCon();
-    }
-
-    public void SavePlayer()
+    public override void SavePlayer()
     {
         if (SceneManager.GetActiveScene().name == "CreatePlayer") return;
         if (playerData != null)
@@ -146,14 +71,14 @@ public class DbManager : MonoBehaviour
             InsertToCardDeck(playerData);
         }
     }
-    public void CloseCon()
+    public override  void CloseCon()
     {
         con.Close();
         Debug.Log("closed");
     }
 
     #region Player
-    public bool InsertToPlayers(string Name, string password, int balance)
+    public override bool InsertToPlayers(string Name, string password, int balance)
     {
         //'{Name}',{balance}, '{password}'
         password = Hashing.ToSHA256(password);
@@ -180,7 +105,7 @@ public class DbManager : MonoBehaviour
         return true;
     }
 
-    public bool IsPlayerExits(string nick, string password)
+    public override bool IsPlayerExits(string nick, string password)
     {
         string query = $"select* from gamedb.players where p_name = @name and p_password = @password";
         MySqlCommand command = new MySqlCommand(query, con);
@@ -220,7 +145,7 @@ public class DbManager : MonoBehaviour
         }
     }
 
-    public List<string> SelectFromPlayers()
+    public override List<string> SelectFromPlayers()
     {
         string query = $"select p_name from gamedb.players";
         List<string> nickList = new List<string>();
@@ -251,7 +176,7 @@ public class DbManager : MonoBehaviour
         return nickList;
     }
 
-    public int UpdatePlayerBalance(PlayerData playerData)
+    public override int UpdatePlayerBalance(PlayerData playerData)
     {
         string query = $"UPDATE gamedb.players SET balance = {playerData.money} where p_name='{playerData.Name}'";
 
@@ -268,7 +193,7 @@ public class DbManager : MonoBehaviour
         return Convert.ToInt32(command.LastInsertedId);
     }
 
-    public int SelectBalancePlayer(PlayerData playerData)
+    public override int SelectBalancePlayer(PlayerData playerData)
     {
         int balance = -1;
         string query = $"select balance from gamedb.players where p_name='{playerData.Name}'";
@@ -295,7 +220,7 @@ public class DbManager : MonoBehaviour
         return balance;
     }
 
-    public int SelectIdPlayer(string playerName)
+    public override  int SelectIdPlayer(string playerName)
     {
         string query = $"select idPlayers from gamedb.players where gamedb.players.p_name = '{playerName}'";
         MySqlCommand command = new MySqlCommand(query, con);
@@ -326,7 +251,7 @@ public class DbManager : MonoBehaviour
     #endregion
 
     #region AllChars
-    public void IsertIntoChars(PlayerData playerData)
+    public override void IsertIntoChars(PlayerData playerData)
     {
 
         for (int i = 0; i < playerData.allCharCards.Count; i++)
@@ -356,7 +281,7 @@ public class DbManager : MonoBehaviour
         }
     }
 
-    public void SelectFromChars()
+    public override void SelectFromChars()
     {
         playerData.allCharCards = playerData.allCharCards.OrderBy(x => x.name).ToList();
         string query = $"SELECT * FROM gamedb.characters order by char_name";
@@ -394,7 +319,7 @@ public class DbManager : MonoBehaviour
     #endregion
 
     #region AllSupport
-    public void InsertIntoCardsSupport(PlayerData playerData)
+    public override void InsertIntoCardsSupport(PlayerData playerData)
     {
         for (int i = 0; i < playerData.allSupportCards.Count; i++)
         {
@@ -411,7 +336,7 @@ public class DbManager : MonoBehaviour
             command.Dispose();
         }
     }
-    public void SelectFromCardsSupport()
+    public override void SelectFromCardsSupport()
     {
         string query = $"select * from gamedb.cards ORDER BY name";
         playerData.allSupportCards = playerData.allSupportCards.OrderBy(x => x.name).ToList();
@@ -453,7 +378,7 @@ public class DbManager : MonoBehaviour
 
     #region SupportShop
 
-    public void InsertToCardsSupportShop(PlayerData playerData)
+    public override void InsertToCardsSupportShop(PlayerData playerData)
     {
         for (int i = 0; i < playerData.allShopSupportCards.Count; i++)
         {
@@ -471,7 +396,7 @@ public class DbManager : MonoBehaviour
             command.Dispose();
         }
     }
-    public void RemoveCardsSupportShop(PlayerData playerData)
+    public override void RemoveCardsSupportShop(PlayerData playerData)
     {
         string query = $"DELETE FROM gamedb.cards_shop WHERE id_player = {playerData.PlayerId}";
         var command = new MySqlCommand(query, con);
@@ -488,7 +413,7 @@ public class DbManager : MonoBehaviour
     }
 
 
-    public void InsertToCardsSupportShopStart(PlayerData playerData)
+    public override void InsertToCardsSupportShopStart(PlayerData playerData)
     {
 
         for (int i = 0; i < playerData.allSupportCards.Count; i++)
@@ -510,7 +435,7 @@ public class DbManager : MonoBehaviour
         }
     }
 
-    public List<int> SelectFromCardsSupportShop(PlayerData playerData)
+    public override List<int> SelectFromCardsSupportShop(PlayerData playerData)
     {
         string query = $"SELECT idCards FROM gamedb.cards as c inner join gamedb.cards_shop as cs on(c.idCards = cs.idCards_Shop) where cs.id_player = {playerData.PlayerId}";
         /* List<CardSupport> CardSupportList = new List<CardSupport>();*/
@@ -547,7 +472,7 @@ public class DbManager : MonoBehaviour
 
     #region CharShop
 
-    public void InsertToCardsShop(PlayerData playerData)
+    public override void InsertToCardsShop(PlayerData playerData)
     {
         for (int i = 0; i < playerData.allShopCharCards.Count; i++)
         {
@@ -564,7 +489,7 @@ public class DbManager : MonoBehaviour
             command.Dispose();
         }
     }
-    public void RemoveCardsShop(PlayerData playerData)
+    public override void RemoveCardsShop(PlayerData playerData)
     {
         string query = $"DELETE FROM gamedb.characters_shop WHERE id_payer = {playerData.PlayerId}";
         var command = new MySqlCommand(query, con);
@@ -580,7 +505,7 @@ public class DbManager : MonoBehaviour
 
     }
 
-    public void InsertToCardsShopStart(PlayerData playerData)
+    public override void InsertToCardsShopStart(PlayerData playerData)
     {
         for (int i = 0; i < playerData.allCharCards.Count; i++)
         {
@@ -601,7 +526,7 @@ public class DbManager : MonoBehaviour
         }
     }
 
-    public List<int> SelectFromCardsShop(PlayerData playerData)
+    public override List<int> SelectFromCardsShop(PlayerData playerData)
     {
         string query = $"SELECT idCharacters FROM gamedb.characters as c inner join gamedb.characters_shop as cs on(c.idCharacters = cs.idCharacters_Shop) where cs.id_payer = {playerData.PlayerId}";
         /*List<CharacterCard> cardList = new List<CharacterCard>();*/
@@ -639,7 +564,7 @@ public class DbManager : MonoBehaviour
     #region SupportOwn
 
 
-    public void InsertToCardsSupportOwn(PlayerData playerData)
+    public override void InsertToCardsSupportOwn(PlayerData playerData)
     {
         for (int i = 0; i < playerData.allUserSupportCards.Count; i++)
         {
@@ -656,7 +581,7 @@ public class DbManager : MonoBehaviour
             command.Dispose();
         }
     }
-    public void RemoveCardsSupportOwn(PlayerData playerData)
+    public override void RemoveCardsSupportOwn(PlayerData playerData)
     {
         string query = $"DELETE FROM gamedb.owned_cards WHERE player_id = {playerData.PlayerId}";
         var command = new MySqlCommand(query, con);
@@ -674,7 +599,7 @@ public class DbManager : MonoBehaviour
 
 
 
-    public void InsertToOwnCardsSupportStart(PlayerData playerData)
+    public override void InsertToOwnCardsSupportStart(PlayerData playerData)
     {
         for (int i = 0; i < playerData.startUserSupportCards.Count; i++)
         {
@@ -692,7 +617,7 @@ public class DbManager : MonoBehaviour
         }
     }
 
-    public List<int> SelectFromOwnCardsSupport(PlayerData playerData)
+    public override List<int> SelectFromOwnCardsSupport(PlayerData playerData)
     {
         string query = $"SELECT idCards FROM gamedb.cards as c inner join gamedb.owned_cards as cs on(c.idCards = cs.card_id) where cs.player_id = {playerData.PlayerId}";
         /*List<CardSupport> CardSupportList = new List<CardSupport>();*/
@@ -731,7 +656,7 @@ public class DbManager : MonoBehaviour
     #region CharOwn
 
 
-    public void InsertToCardsOwn(PlayerData playerData)
+    public override void InsertToCardsOwn(PlayerData playerData)
     {
         for (int i = 0; i < playerData.allUserCharCards.Count; i++)
         {
@@ -748,7 +673,7 @@ public class DbManager : MonoBehaviour
             command.Dispose();
         }
     }
-    public void RemoveCardsOwn(PlayerData playerData)
+    public override void RemoveCardsOwn(PlayerData playerData)
     {
         string query = $"DELETE FROM gamedb.owned_characters WHERE playerId = {playerData.PlayerId}";
         var command = new MySqlCommand(query, con);
@@ -767,7 +692,7 @@ public class DbManager : MonoBehaviour
 
 
 
-    public void InsertToOwnCardStart(PlayerData playerData)
+    public override void InsertToOwnCardStart(PlayerData playerData)
     {
         for (int i = 0; i < playerData.startUserCharCards.Count; i++)
         {
@@ -785,7 +710,7 @@ public class DbManager : MonoBehaviour
         }
     }
 
-    public List<int> SelectFromOwnCards(PlayerData playerData)
+    public override List<int> SelectFromOwnCards(PlayerData playerData)
     {
         string query = $"SELECT idCharacters FROM gamedb.characters as c inner join gamedb.owned_characters as cs on(c.idCharacters = cs.character_id) where cs.playerId = {playerData.PlayerId}";
         /*List<CharacterCard> cardList = new List<CharacterCard>();*/
@@ -822,7 +747,7 @@ public class DbManager : MonoBehaviour
     #endregion
 
     #region SupportDeck
-    public void InsertToCardsSupportDeck(PlayerData playerData)
+    public override void InsertToCardsSupportDeck(PlayerData playerData)
     {
         for (int i = 0; i < playerData.deckUserSupportCards.Count; i++)
         {
@@ -839,7 +764,7 @@ public class DbManager : MonoBehaviour
             command.Dispose();
         }
     }
-    public void RemoveCardsSupportDeck(PlayerData playerData)
+    public override void RemoveCardsSupportDeck(PlayerData playerData)
     {
         string query = $"DELETE FROM gamedb.deck_cards WHERE IdPlayer = {playerData.PlayerId}";
         var command = new MySqlCommand(query, con);
@@ -855,7 +780,7 @@ public class DbManager : MonoBehaviour
 
     }
 
-    public List<int> SelectFromDeckCardsSupport(PlayerData playerData)
+    public override List<int> SelectFromDeckCardsSupport(PlayerData playerData)
     {
         string query = $"SELECT idCards FROM gamedb.cards as c inner join gamedb.deck_cards as cs on(c.idCards = cs.IdCard) where cs.IdPlayer = {playerData.PlayerId}";
         /* List<CardSupport> CardSupportList = new List<CardSupport>();*/
@@ -891,7 +816,7 @@ public class DbManager : MonoBehaviour
     #endregion
 
     #region CharDeck
-    public void InsertToCardDeck(PlayerData playerData)
+    public override void InsertToCardDeck(PlayerData playerData)
     {
         for (int i = 0; i < playerData.deckUserCharCards.Count; i++)
         {
@@ -908,7 +833,7 @@ public class DbManager : MonoBehaviour
             command.Dispose();
         }
     }
-    public void RemoveCardsDeck(PlayerData playerData)
+    public override void RemoveCardsDeck(PlayerData playerData)
     {
         string query = $"DELETE FROM gamedb.deck_characters WHERE IdPlayer = {playerData.PlayerId}";
         var command = new MySqlCommand(query, con);
@@ -924,7 +849,7 @@ public class DbManager : MonoBehaviour
 
     }
 
-    public List<int> SelectFromDeckCards(PlayerData playerData)
+    public override List<int> SelectFromDeckCards(PlayerData playerData)
     {
         string query = $"SELECT idCharacters FROM gamedb.characters as c inner join gamedb.deck_characters as cs on(c.idCharacters = cs.IdCharacter) where cs.IdPlayer = {playerData.PlayerId}";
         /* List<CharacterCard> cardList = new List<CharacterCard>();*/
@@ -959,7 +884,7 @@ public class DbManager : MonoBehaviour
     #endregion
 
     #region CreatingCards
-    private void SetDataToCharacterCard(MySqlDataReader reader, CharacterCard item)
+    private  void SetDataToCharacterCard(MySqlDataReader reader, CharacterCard item)
     {
         item.cardName = reader.GetString("char_name");
 

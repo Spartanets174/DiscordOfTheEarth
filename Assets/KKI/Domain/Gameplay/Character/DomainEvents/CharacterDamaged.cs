@@ -1,6 +1,8 @@
+using DOTE.Domain.DomainModel;
+
 namespace DOTE.Domain.Gameplay.Character
 {
-    public class CharacterDamaged
+    public class CharacterDamaged : IDomainEvent
     {
         private string damagedCharacterId;
         private string attackerName;

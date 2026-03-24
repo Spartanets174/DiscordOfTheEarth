@@ -1,13 +1,11 @@
-using DOTE.Domain.DomainModel;
-
-namespace DOTE.Domain.Gameplay.Character
+namespace DOTE.Domain.DomainModel
 {
-    public class CharacterAbilityUsed : IDomainEvent
+    public class CharacterAbilityUsingStarted : IDomainEvent
     {
         private string characterId;
         private string abilityId;
 
-        public CharacterAbilityUsed(string characterId, string abilityId)
+        public CharacterAbilityUsingStarted(string characterId, string abilityId)
         {
             this.characterId = characterId;
             this.abilityId = abilityId;

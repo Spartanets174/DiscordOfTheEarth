@@ -1,6 +1,8 @@
+using DOTE.Domain.DomainModel;
+
 namespace DOTE.Domain.Gameplay.Character
 {
-    public class CharacterHealed
+    public class CharacterHealed : IDomainEvent
     {
         private string healedCharacterId;
         private float healAmount;

@@ -1,6 +1,8 @@
+using DOTE.Domain.DomainModel;
+
 namespace DOTE.Domain.Gameplay.Character
 {
-    public class CharacterDied 
+    public class CharacterDied : IDomainEvent
     {
         private string diedCharacterId;
 

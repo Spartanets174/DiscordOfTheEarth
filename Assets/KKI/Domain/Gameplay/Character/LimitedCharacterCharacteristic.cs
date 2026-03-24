@@ -8,6 +8,14 @@ namespace DOTE.Domain.Gameplay.Character
         public T CurrentValue { get; protected set; }
         public bool CanChangeValue { get; private set; }
 
+        protected T startValue;
+
+        protected ALimitedCharacterCharacteristic(T maxValue, T currentValue) : this(maxValue)
+        {
+            startValue = currentValue;
+            SetCurrentValue(currentValue);
+        }
+
         public ALimitedCharacterCharacteristic(T maxValue)
         {
             MaxValue = maxValue;
@@ -19,7 +27,7 @@ namespace DOTE.Domain.Gameplay.Character
         {
             if (CanChangeValue)
             {
-                SetCurrentValueHook(value);
+                SetCurrentValueHook(value, ignoreMax);
             }
         }
 
@@ -27,7 +35,15 @@ namespace DOTE.Domain.Gameplay.Character
         {
             if (CanChangeValue)
             {
-                IncreaseCurrentValueHook(value);
+                IncreaseCurrentValueHook(value, ignoreMax);
+            }
+        }
+
+        public void DecreaseCurrentValue(T value, bool ignoreMax = false)
+        {
+            if (CanChangeValue)
+            {
+                DecreaseCurrentValueHook(value);
             }
         }
 
@@ -38,10 +54,15 @@ namespace DOTE.Domain.Gameplay.Character
 
         public void ResetCurrentValue()
         {
-            CurrentValue = MaxValue;
+            if (CanChangeValue)
+            {
+                CurrentValue = MaxValue;
+            }
         }
 
+        public abstract void ToStartValueIfLower();
         protected abstract void IncreaseCurrentValueHook(T value, bool ignoreMax = false);
+        protected abstract void DecreaseCurrentValueHook(T value);
         protected abstract void SetCurrentValueHook(T value, bool ignoreMax = false);
     }
 
@@ -51,9 +72,20 @@ namespace DOTE.Domain.Gameplay.Character
         {
         }
 
+        public override void ToStartValueIfLower()
+        {
+            if (CurrentValue < startValue)
+            {
+                SetCurrentValue(startValue);
+            }
+        }
         protected override void IncreaseCurrentValueHook(float value, bool ignoreMax)
         {
             CurrentValue = Mathf.Clamp(CurrentValue + value, 0, ignoreMax ? float.MaxValue : MaxValue);
+        }
+        protected override void DecreaseCurrentValueHook(float value)
+        {
+            CurrentValue = Mathf.Clamp(CurrentValue - value, 0, float.MaxValue);
         }
 
         protected override void SetCurrentValueHook(float value, bool ignoreMax)
@@ -67,12 +99,22 @@ namespace DOTE.Domain.Gameplay.Character
         public IntLimitedCharacterCharacteristic(int maxValue) : base(maxValue)
         {
         }
+        public override void ToStartValueIfLower()
+        {
+            if (CurrentValue < startValue)
+            {
+                SetCurrentValue(startValue);
+            }
+        }
         protected override void IncreaseCurrentValueHook(int value, bool ignoreMax)
         {
             int potentialValue = CurrentValue + value;
             CurrentValue = Mathf.Clamp(potentialValue, 0, ignoreMax ? int.MaxValue : MaxValue);
         }
-
+        protected override void DecreaseCurrentValueHook(int value)
+        {
+            CurrentValue = Mathf.Clamp(CurrentValue - value, 0, int.MaxValue);
+        }
         protected override void SetCurrentValueHook(int value, bool ignoreMax)
         {
             CurrentValue = Mathf.Clamp(value, 0, ignoreMax ? int.MaxValue : MaxValue);

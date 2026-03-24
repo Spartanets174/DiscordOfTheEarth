@@ -6,12 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/KKI/Scenes/CreatePlayer.unity
+    path: Assets/KKI/UI/Scenes/CreatePlayer.unity
     guid: 38d99f19491fc0745b744d57c900126f
   - enabled: 1
-    path: Assets/KKI/Scenes/menu.unity
+    path: Assets/KKI/UI/Scenes/menu.unity
     guid: fffc368ce7c545240a157d1fa3ce0e97
   - enabled: 1
-    path: Assets/KKI/Scenes/game.unity
+    path: Assets/KKI/UI/Scenes/game.unity
     guid: bb855cb007df520488ccde004f8538bc
   m_configObjects: {}

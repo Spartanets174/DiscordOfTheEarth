@@ -1,8 +1,9 @@
+using DOTE.Domain.DomainModel;
 using UnityEngine;
 
 namespace DOTE.Domain.Gameplay.Character
 {
-    public class CharacterMoved
+    public class CharacterMoved : IDomainEvent
     {
         private string movedCharacterId;
         private Vector2 fromCellId;

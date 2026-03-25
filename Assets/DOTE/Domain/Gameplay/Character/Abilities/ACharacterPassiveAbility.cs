@@ -5,9 +5,9 @@ namespace DOTE.Gameplay.Domain.Character
         public string AbilityID { get; private set; }
         public CharacterPassiveAbilityInformation AbilityInfo { get; private set; }
 
-        protected Character abilityOwner;
+        protected PlayableCharacter abilityOwner;
 
-        protected ACharacterPassiveAbility(string abilityID, CharacterPassiveAbilityInformation abilityInfo, Character abilityOwner)
+        protected ACharacterPassiveAbility(string abilityID, CharacterPassiveAbilityInformation abilityInfo, PlayableCharacter abilityOwner)
         {
             AbilityID = abilityID;
             AbilityInfo = abilityInfo;

@@ -5,9 +5,10 @@ using UnityEngine;
 
 namespace DOTE.Gameplay.Domain.Character
 {
-    public class Character
+    public class PlayableCharacter
     {
         public string CharacterId { get; private set; }
+        public string OwnerId { get; private set; }
         public CharacterInformation CharacterInformation { get; private set; }
 
         public FloatLimitedCharacterCharacteristic Health { get; private set; }
@@ -42,7 +43,7 @@ namespace DOTE.Gameplay.Domain.Character
 
         private ACharacterActiveAbility attackAbility;
         private ACharacterActiveAbility protectiveAbility;
-        private ACharacterActiveAbility buffAbility;
+        private ACharacterActiveAbility enchancingAbility;
 
         private ACharacterActiveAbility currentUsingAbility;
 
@@ -62,7 +63,7 @@ namespace DOTE.Gameplay.Domain.Character
         private Dictionary<Class, bool> blockDamageFromClassMap;
         private Dictionary<Race, bool> blockDamageFromRaseMap;
 
-        public Character(string characterId, CharacterInformation characterInformation, FloatLimitedCharacterCharacteristic health, IntLimitedCharacterCharacteristic speed, FloatCharacterCharacteristic physicalAttack, FloatCharacterCharacteristic magicalAttack, FloatCharacterCharacteristic physicalDefence, FloatCharacterCharacteristic magicalDefence, FloatLimitedCharacterCharacteristic criticalDamageChance, FloatCharacterCharacteristic criticalDamageValue, FloatCharacterCharacteristic physicalDamageMultiplier, FloatCharacterCharacteristic magicalDamageMultiplier, FloatLimitedCharacterCharacteristic freeAttackChance, FloatLimitedCharacterCharacteristic avoidDamageChance, IntCharacterCharacteristic attackRange, FloatCharacterCharacteristic useAbilityCost, ACharacterActiveAbility attackAbility, ACharacterActiveAbility protectiveAbility, ACharacterActiveAbility buffAbility, ACharacterPassiveAbility passiveAbility, IDomainEventBus eventBus)
+        public PlayableCharacter(string characterId, CharacterInformation characterInformation, FloatLimitedCharacterCharacteristic health, IntLimitedCharacterCharacteristic speed, FloatCharacterCharacteristic physicalAttack, FloatCharacterCharacteristic magicalAttack, FloatCharacterCharacteristic physicalDefence, FloatCharacterCharacteristic magicalDefence, FloatLimitedCharacterCharacteristic criticalDamageChance, FloatCharacterCharacteristic criticalDamageValue, FloatCharacterCharacteristic physicalDamageMultiplier, FloatCharacterCharacteristic magicalDamageMultiplier, FloatLimitedCharacterCharacteristic freeAttackChance, FloatLimitedCharacterCharacteristic avoidDamageChance, IntCharacterCharacteristic attackRange, FloatCharacterCharacteristic useAbilityCost, ACharacterActiveAbility attackAbility, ACharacterActiveAbility protectiveAbility, ACharacterActiveAbility enchancingAbility, ACharacterPassiveAbility passiveAbility, IDomainEventBus eventBus, string ownerId)
         {
             CharacterId = characterId;
             CharacterInformation = characterInformation;
@@ -82,7 +83,7 @@ namespace DOTE.Gameplay.Domain.Character
             UseAbilityCost = useAbilityCost;
             this.attackAbility = attackAbility;
             this.protectiveAbility = protectiveAbility;
-            this.buffAbility = buffAbility;
+            this.enchancingAbility = enchancingAbility;
             this.passiveAbility = passiveAbility;
             this.eventBus = eventBus;
 
@@ -111,9 +112,10 @@ namespace DOTE.Gameplay.Domain.Character
             SetCanAttack(true);
             SetCanUseAbilities(true);
             SetCanBeDamaged(true);
+            OwnerId = ownerId;
         }
 
-        public void Attack(Character target)
+        public void Attack(PlayableCharacter target)
         {
             if (CanAttack && !isAttackedOnMove)
             {
@@ -136,7 +138,7 @@ namespace DOTE.Gameplay.Domain.Character
             TakeDamage(finalDamage, characterActiveAbility.AbilityInfo.GetAbilityName());
         }
 
-        public void TakeDamage(Character attacker)
+        public void TakeDamage(PlayableCharacter attacker)
         {
             if (blockDamageFromClassMap[attacker.CharacterInformation.GetCharacterClass()])
             {
@@ -217,36 +219,28 @@ namespace DOTE.Gameplay.Domain.Character
             AttackRange.ToStartValueIfLower();
         }
 
-        public void UseAtackAbility()
+        public void UseAbility(ActiveAbilityType activeAbilityType)
         {
-            if (CanUseAbilities)
+            if (!CanUseAbilities)
             {
-                UseAbility(attackAbility);
+                return;
+            }
+
+            switch (activeAbilityType)
+            {
+                case ActiveAbilityType.Attack:
+                    UseAbility(attackAbility);
+                    break;
+                case ActiveAbilityType.Protective:
+                    UseAbility(protectiveAbility);
+                    break;
+                case ActiveAbilityType.Enchancing:
+                    UseAbility(enchancingAbility);
+                    break;
             }
         }
 
-        public void UseProtectiveAbility()
-        {
-            if (CanUseAbilities)
-            {
-                UseAbility(protectiveAbility);
-            }
-        }
-
-        public void UseBuffAbility()
-        {
-            if (CanUseAbilities)
-            {
-                UseAbility(buffAbility);
-            }
-        }
-
-        public void ActivatePassiveAbility()
-        {
-            passiveAbility.RunAbility();
-        }
-
-        public void CancelUsingCurrentAbility()
+        public void CancelUsingCurrentActiveAbility()
         {
             if (currentUsingAbility != null)
             {
@@ -254,6 +248,11 @@ namespace DOTE.Gameplay.Domain.Character
                 currentUsingAbility.OnAbilityUsed -= OnCharacterAbilityUsed;
                 eventBus.Publish(new CharacterActiveAbilityUsingCanceled(CharacterId, attackAbility.ActiveAbilityType));
             }
+        }
+
+        public void ActivatePassiveAbility()
+        {
+            passiveAbility.RunAbility();
         }
 
         public void EquipItem(AItem item)
@@ -358,12 +357,12 @@ namespace DOTE.Gameplay.Domain.Character
             return (0.65f * Mathf.Pow(attackerDamage / attackedResistance, 0.4f) * (1 * Random.Range(1, 1.5f))) / 8;
         }
 
-        private float CalculateDamageMultipliers(Character attacker)
+        private float CalculateDamageMultipliers(PlayableCharacter attacker)
         {
             return CalculateCriticalDamageMultiplier(attacker) * CalculateRaceAndClassMultiplier(attacker);
         }
 
-        private float CalculateRaceAndClassMultiplier(Character attacker)
+        private float CalculateRaceAndClassMultiplier(PlayableCharacter attacker)
         {
             Race attackerRace = attacker.CharacterInformation.GetCharacterRace();
             Class attackerClass = attacker.CharacterInformation.GetCharacterClass();
@@ -372,7 +371,7 @@ namespace DOTE.Gameplay.Domain.Character
             return CalculateCriticalDamageMultiplier(attacker) * damageMultiplierByRaceMap[attackerRace] * damageMultiplierByClassMap[attackerClass] * attacker.attackMultiplierByRaceMap[attackedRace] * attacker.attackMultiplierByClassMap[attackedClass];
         }
 
-        private float CalculateCriticalDamageMultiplier(Character character)
+        private float CalculateCriticalDamageMultiplier(PlayableCharacter character)
         {
             float chance = Random.Range(0f, 1f);
             if (chance < character.CriticalDamageChance.CurrentValue)

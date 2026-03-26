@@ -1,0 +1,95 @@
+using DOTE.Gameplay.Domain.Character;
+using DOTE.SharedKernel.Domain;
+using DOTE.SharedKernel.Infrastructure.Character;
+using System;
+using UnityEngine;
+
+namespace DOTE.Gameplay.Infrastructure.Character
+{
+    [CreateAssetMenu(fileName = "CharacterBuilderSO", menuName = "DOTE/Gameplay/Character/CharacterBuilderSO")]
+    public class CharacterBuilderSO : ScriptableObject
+    {
+        [SerializeField]
+        private CharacterConfig characterConfig;
+        [SerializeField]
+        private CharacterActiveAbilityBuilderSO attackAbilityBuilderSO;
+        [SerializeField]
+        private CharacterActiveAbilityBuilderSO protectiveAbilityBuilderSO;
+        [SerializeField]
+        private CharacterActiveAbilityBuilderSO enchancingAbilityBuilderSO;
+        [SerializeField]
+        private CharacterPassiveAbilityBuilderSO passiveAbilityBuilderSO;
+
+        [SerializeField]
+        private int defaultAbilityUsingCost = 11;
+
+        public CharacterBuilder CreateBuilder(string characterId, string ownerId)
+        {
+            return new(typeof(PlayableCharacter), 
+                characterId, 
+                ownerId, 
+                characterConfig,
+                attackAbilityBuilderSO.CreateBuilder(),
+                protectiveAbilityBuilderSO.CreateBuilder(),
+                enchancingAbilityBuilderSO.CreateBuilder(),
+                passiveAbilityBuilderSO.CreateBuilder(),
+                defaultAbilityUsingCost);
+        }
+    }
+
+    public class CharacterBuilder : ABuilder<PlayableCharacter>
+    {
+        private string characterId;
+        private string ownerId;
+
+        private CharacterConfig characterConfig;
+        private CharacterActiveAbilityBuilder attackAbilityBuilder;
+        private CharacterActiveAbilityBuilder protectiveAbilityBuilder;
+        private CharacterActiveAbilityBuilder enchancingAbilityBuilder;
+        private CharacterPassiveAbilityBuilder passiveAbilityBuilder;
+
+        private int defaultAbilityUsingCost;
+
+        public CharacterBuilder(Type type, string characterId, string ownerId, CharacterConfig characterConfig, CharacterActiveAbilityBuilder attackAbilityBuilder, CharacterActiveAbilityBuilder protectiveAbilityBuilder, CharacterActiveAbilityBuilder enchancingAbilityBuilder, CharacterPassiveAbilityBuilder passiveAbilityBuilder, int defaultAbilityUsingCost) : base(type)
+        {
+            this.characterId = characterId;
+            this.ownerId = ownerId;
+            this.characterConfig = characterConfig;
+            this.attackAbilityBuilder = attackAbilityBuilder;
+            this.protectiveAbilityBuilder = protectiveAbilityBuilder;
+            this.enchancingAbilityBuilder = enchancingAbilityBuilder;
+            this.passiveAbilityBuilder = passiveAbilityBuilder;
+            this.defaultAbilityUsingCost = defaultAbilityUsingCost;
+        }
+
+        public override PlayableCharacter Build()
+        {
+            return new(characterId,
+                ownerId,
+                new CharacterInformation(characterConfig.GetCharacterName(),
+                characterConfig.GetCharacterDescription(),
+                characterConfig.GetCharacterRace(),
+                characterConfig.GetCharacterClass(),
+                characterConfig.GetCharacterRarity()),
+                new FloatLimitedCharacterCharacteristic(characterConfig.GetHealth()),
+                new IntLimitedCharacterCharacteristic(characterConfig.GetSpeed()),
+                new FloatCharacterCharacteristic(characterConfig.GetPhysicalAttack()),
+                new FloatCharacterCharacteristic(characterConfig.GetMagicalAttack()),
+                new FloatCharacterCharacteristic(characterConfig.GetPhysicalDefence()),
+                new FloatCharacterCharacteristic(characterConfig.GetMagicalDefence()),
+                new FloatLimitedCharacterCharacteristic(1, characterConfig.GetCriticalDamageChance()),
+                new FloatCharacterCharacteristic(characterConfig.GetCriticalDamageValue()),
+                new FloatCharacterCharacteristic(1),
+                new FloatCharacterCharacteristic(1),
+                new FloatLimitedCharacterCharacteristic(1, 0),
+                new FloatLimitedCharacterCharacteristic(1, 0),
+                new IntCharacterCharacteristic(characterConfig.GetAttackRange()),
+                new FloatCharacterCharacteristic(defaultAbilityUsingCost), 
+                attackAbilityBuilder.Build(),
+                protectiveAbilityBuilder.Build(),
+                enchancingAbilityBuilder.Build(),
+                passiveAbilityBuilder.Build());
+        }
+
+    }
+}

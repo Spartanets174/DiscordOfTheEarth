@@ -1,8 +1,5 @@
 using DOTE.Gameplay.Domain.Character;
-using DOTE.SharedKernel.Domain;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace DOTE.Gameplay.Infrastructure.Character
 {
@@ -30,20 +27,10 @@ namespace DOTE.Gameplay.Infrastructure.Character
             }
         }
 
-        public string GenerateCharacterId()
-        {
-            return Guid.NewGuid().ToString();
-        }
-
         public PlayableCharacter GetCharacterById(string characterId)
         {
             charactersMap.TryGetValue(characterId, out PlayableCharacter character);
             return character;
-        }
-
-        public List<PlayableCharacter> GetPlayerCharacters(string playerId)
-        {
-            return charactersMap.Values.Where(x => x.OwnerId == playerId).ToList();
         }
     }
 }

@@ -1,5 +1,4 @@
 using DOTE.Gameplay.Domain.Character;
-using DOTE.Gameplay.Domain.Item;
 using DOTE.SharedKernel.Domain;
 
 namespace DOTE.Gameplay.Application.Character
@@ -7,12 +6,10 @@ namespace DOTE.Gameplay.Application.Character
     public class CharacterService
     {
         private ICharacterRepository characterRepository;
-        private IItemRepository itemRepository;
 
-        public CharacterService(ICharacterRepository characterRepository, IItemRepository itemRepository)
+        public CharacterService(ICharacterRepository characterRepository)
         {
             this.characterRepository = characterRepository;
-            this.itemRepository = itemRepository;
         }
 
         public void AttackCharacter(string attackerId, string attackedId)
@@ -68,17 +65,15 @@ namespace DOTE.Gameplay.Application.Character
         public void EquipItem(string characterId, string itemId)
         {
             PlayableCharacter character = characterRepository.GetCharacterById(characterId);
-            AItem item = itemRepository.GetItemById(itemId);
 
-            character.EquipItem(item);
+            character.EquipItem(itemId);
         }
 
         public void RemoveItem(string characterId, string itemId)
         {
             PlayableCharacter character = characterRepository.GetCharacterById(characterId);
-            AItem item = itemRepository.GetItemById(itemId);
 
-            character.RemoveItem(item);
+            character.RemoveItem(itemId);
         }
     }
 }

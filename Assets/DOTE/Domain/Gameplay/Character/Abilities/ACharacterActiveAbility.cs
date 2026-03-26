@@ -7,15 +7,22 @@ namespace DOTE.Gameplay.Domain.Character
     {
         public ActiveAbilityType ActiveAbilityType => AbilityInfo.GetActiveAbilityType();
         public CharacterActiveAbilityInformation AbilityInfo { get; private set; }
-        public PlayableCharacter AbilityOwner { get; private set; }
         public bool IsUsed { get; private set; }
         public bool IsUsing { get; private set; }
+        public PlayableCharacter AbilityOwner { get; private set; }
 
         public event Action OnAbilityUsed;
         protected ACharacterActiveAbility(CharacterActiveAbilityInformation abilityInfo, PlayableCharacter abilityOwner)
         {
             AbilityInfo = abilityInfo;
-            this.AbilityOwner = abilityOwner;
+        }
+
+        public void SetAbilityOwner(PlayableCharacter abilityOwner)
+        {
+            if (AbilityOwner == null)
+            {
+                AbilityOwner = abilityOwner;
+            }
         }
 
         public void UseAbility()

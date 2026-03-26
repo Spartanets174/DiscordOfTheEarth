@@ -10,9 +10,11 @@ namespace DOTE.Gameplay.Domain.Character
 
         protected T startValue;
 
-        protected ALimitedCharacterCharacteristic(T maxValue, T currentValue) : this(maxValue)
+        public ALimitedCharacterCharacteristic(T maxValue, T currentValue)
         {
             startValue = currentValue;
+            MaxValue = maxValue;
+            SetCanChangeValue(true);
             SetCurrentValue(currentValue);
         }
 
@@ -68,6 +70,10 @@ namespace DOTE.Gameplay.Domain.Character
 
     public class FloatLimitedCharacterCharacteristic : ALimitedCharacterCharacteristic<float>
     {
+        public FloatLimitedCharacterCharacteristic(float maxValue, float currentValue) : base(maxValue, currentValue)
+        {
+        }
+
         public FloatLimitedCharacterCharacteristic(float maxValue) : base(maxValue)
         {
         }
@@ -96,9 +102,14 @@ namespace DOTE.Gameplay.Domain.Character
 
     public class IntLimitedCharacterCharacteristic : ALimitedCharacterCharacteristic<int>
     {
+        public IntLimitedCharacterCharacteristic(int maxValue, int currentValue) : base(maxValue, currentValue)
+        {
+        }
+
         public IntLimitedCharacterCharacteristic(int maxValue) : base(maxValue)
         {
         }
+
         public override void ToStartValueIfLower()
         {
             if (CurrentValue < startValue)

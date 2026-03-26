@@ -13,6 +13,13 @@ namespace DOTE.Gameplay.Domain.Character
             AbilityInfo = abilityInfo;
             this.abilityOwner = abilityOwner;
         }
+        public void SetAbilityOwner(PlayableCharacter abilityOwner)
+        {
+            if (this.abilityOwner == null)
+            {
+                this.abilityOwner = abilityOwner;
+            }
+        }
 
         public abstract void RunAbility();
         public abstract void StopAbility();

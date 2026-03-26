@@ -31,14 +31,14 @@ namespace DOTE.Gameplay.Domain.SupportCard
             domainEventBus.Publish(new SupportCardUsingStarted(SupportCardId));
         }
 
-        public void CancelSupportCard()
+        public void CancelUsingSupportCard()
         {
             if (IsUsed)
             {
                 return;
             }
 
-            CancelSupportCardHook();
+            CancelUsingSupportCardHook();
             IsUsing = false;
             domainEventBus.Publish(new SupportCardUsingCanceled(SupportCardId));
         }
@@ -51,6 +51,6 @@ namespace DOTE.Gameplay.Domain.SupportCard
         }
 
         protected abstract void UseSupportCardHook();
-        protected abstract void CancelSupportCardHook();
+        protected abstract void CancelUsingSupportCardHook();
     }
 }

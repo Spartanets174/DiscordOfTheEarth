@@ -2,6 +2,7 @@ using DOTE.Gameplay.Domain.Item;
 using DOTE.SharedKernel.Domain;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 namespace DOTE.Gameplay.Domain.Character
 {
@@ -51,6 +52,7 @@ namespace DOTE.Gameplay.Domain.Character
         private bool ignorePysicalDamage;
         private bool ignoreMagicalDamage;
 
+        [Inject]
         private IDomainEventBus eventBus;
 
         private List<string> equipedItemsIds;
@@ -63,9 +65,10 @@ namespace DOTE.Gameplay.Domain.Character
         private Dictionary<Class, bool> blockDamageFromClassMap;
         private Dictionary<Race, bool> blockDamageFromRaseMap;
 
-        public PlayableCharacter(string characterId, CharacterInformation characterInformation, FloatLimitedCharacterCharacteristic health, IntLimitedCharacterCharacteristic speed, FloatCharacterCharacteristic physicalAttack, FloatCharacterCharacteristic magicalAttack, FloatCharacterCharacteristic physicalDefence, FloatCharacterCharacteristic magicalDefence, FloatLimitedCharacterCharacteristic criticalDamageChance, FloatCharacterCharacteristic criticalDamageValue, FloatCharacterCharacteristic physicalDamageMultiplier, FloatCharacterCharacteristic magicalDamageMultiplier, FloatLimitedCharacterCharacteristic freeAttackChance, FloatLimitedCharacterCharacteristic avoidDamageChance, IntCharacterCharacteristic attackRange, FloatCharacterCharacteristic useAbilityCost, ACharacterActiveAbility attackAbility, ACharacterActiveAbility protectiveAbility, ACharacterActiveAbility enchancingAbility, ACharacterPassiveAbility passiveAbility, IDomainEventBus eventBus, string ownerId)
+        public PlayableCharacter(string characterId, string ownerId, CharacterInformation characterInformation, FloatLimitedCharacterCharacteristic health, IntLimitedCharacterCharacteristic speed, FloatCharacterCharacteristic physicalAttack, FloatCharacterCharacteristic magicalAttack, FloatCharacterCharacteristic physicalDefence, FloatCharacterCharacteristic magicalDefence, FloatLimitedCharacterCharacteristic criticalDamageChance, FloatCharacterCharacteristic criticalDamageValue, FloatCharacterCharacteristic physicalDamageMultiplier, FloatCharacterCharacteristic magicalDamageMultiplier, FloatLimitedCharacterCharacteristic freeAttackChance, FloatLimitedCharacterCharacteristic avoidDamageChance, IntCharacterCharacteristic attackRange, FloatCharacterCharacteristic useAbilityCost, ACharacterActiveAbility attackAbility, ACharacterActiveAbility protectiveAbility, ACharacterActiveAbility enchancingAbility, ACharacterPassiveAbility passiveAbility)
         {
             CharacterId = characterId;
+            OwnerId = ownerId;
             CharacterInformation = characterInformation;
             Health = health;
             Speed = speed;
@@ -85,7 +88,6 @@ namespace DOTE.Gameplay.Domain.Character
             this.protectiveAbility = protectiveAbility;
             this.enchancingAbility = enchancingAbility;
             this.passiveAbility = passiveAbility;
-            this.eventBus = eventBus;
 
             attackMultiplierByClassMap = new();
             attackMultiplierByRaceMap = new();
@@ -109,10 +111,14 @@ namespace DOTE.Gameplay.Domain.Character
                 blockDamageFromClassMap.Add(characterClass, false);
             }
 
+            this.attackAbility.SetAbilityOwner(this);
+            this.protectiveAbility.SetAbilityOwner(this);
+            this.enchancingAbility.SetAbilityOwner(this);
+            this.passiveAbility.SetAbilityOwner(this);
+
             SetCanAttack(true);
             SetCanUseAbilities(true);
             SetCanBeDamaged(true);
-            OwnerId = ownerId;
         }
 
         public void Attack(PlayableCharacter target)
@@ -255,16 +261,16 @@ namespace DOTE.Gameplay.Domain.Character
             passiveAbility.RunAbility();
         }
 
-        public void EquipItem(AItem item)
+        public void EquipItem(string itemId)
         {
-            item.Equip(this);
-            equipedItemsIds.Add(item.ItemId);
+            equipedItemsIds.Add(itemId);
+            eventBus.Publish(new CharacterItemEquiped(CharacterId, itemId));
         }
 
-        public void RemoveItem(AItem item)
+        public void RemoveItem(string itemId)
         {
-            item.Remove(this);
-            equipedItemsIds.Add(item.ItemId);
+            equipedItemsIds.Add(itemId);
+            eventBus.Publish(new CharacterItemRemoved(CharacterId, itemId));
         }
 
         public void SetCanAttack(bool value) => CanAttack = value;

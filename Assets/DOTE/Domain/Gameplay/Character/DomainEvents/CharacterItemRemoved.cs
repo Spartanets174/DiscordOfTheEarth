@@ -1,13 +1,13 @@
-using DOTE.SharedKernel.Domain;
+﻿using DOTE.SharedKernel.Domain;
 
-namespace DOTE.Gameplay.Domain.Item
+namespace DOTE.Gameplay.Domain.Character
 {
-    public class ItemEquiped : IDomainEvent
+    public class CharacterItemRemoved : IDomainEvent
     {
         public string ItemId { get; private set; }
         public string CharacterId { get; private set; }
 
-        public ItemEquiped(string itemId, string characterId)
+        public CharacterItemRemoved(string itemId, string characterId)
         {
             ItemId = itemId;
             CharacterId = characterId;

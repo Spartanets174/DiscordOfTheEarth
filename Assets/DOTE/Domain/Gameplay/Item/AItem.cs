@@ -8,15 +8,15 @@ namespace DOTE.Gameplay.Domain.Item
 
         private IDomainEventBus eventBus;
 
-        public void Equip(Character.PlayableCharacter character)
+        public void ApplyEffect(Character.PlayableCharacter character)
         {
             EquipHook(character);
-            eventBus.Publish(new ItemEquiped(ItemId, character.CharacterId));
+            //eventBus.Publish(new ItemEquiped(ItemId, character.CharacterId)); хз нужен ли евент на применение эффекта
         }
-        public void Remove(Character.PlayableCharacter character)
+        public void RemoveEffect(Character.PlayableCharacter character)
         {
             RemoveHook(character);
-            eventBus.Publish(new ItemRemoved(ItemId, character.CharacterId));
+            //eventBus.Publish(new ItemRemoved(ItemId, character.CharacterId)); хз нужен ли евент на удаление эффекта
         }
 
         protected abstract void EquipHook(Character.PlayableCharacter character);

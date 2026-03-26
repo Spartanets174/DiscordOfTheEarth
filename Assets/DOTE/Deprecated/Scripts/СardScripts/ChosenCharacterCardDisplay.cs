@@ -1,7 +1,6 @@
 using DG.Tweening;
 using TMPro;
 using UniRx;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -45,10 +44,10 @@ public class ChosenCharacterCardDisplay : MonoBehaviour
                     $"МЗ: {characterCard.magDefence * 100}" + "\n" +
                     $"ВК: {characterCard.critChance * 100}";
         charDescription.text = characterCard.description;
-        charAbilities.text = $"<color=#{attackColor.ToHexString()}>Атакующая способность</color>: {characterCard.attackAbility}" + "\n" + "\n" +
-                    $"<color=#{defenceColor.ToHexString()}>Защитная способность</color>: {characterCard.defenceAbility}" + "\n" + "\n" +
-                    $"<color=#{buffColor.ToHexString()}>Усиливающая способность</color>: {characterCard.buffAbility}" + "\n" + "\n" +
-                    $"<color=#{passiveColor.ToHexString()}>Пассивная способность</color> {characterCard.passiveAbility}";
+        charAbilities.text = $"<color=#{ColorUtility.ToHtmlStringRGB(attackColor)}>Атакующая способность</color>: {characterCard.attackAbility}" + "\n" + "\n" +
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(defenceColor)}>Защитная способность</color>: {characterCard.defenceAbility}" + "\n" + "\n" +
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(buffColor)}>Усиливающая способность</color>: {characterCard.buffAbility}" + "\n" + "\n" +
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(passiveColor)}>Пассивная способность</color> {characterCard.passiveAbility}";
 
     }
 
@@ -65,10 +64,10 @@ public class ChosenCharacterCardDisplay : MonoBehaviour
                     $"МЗ: {characterCard.magDefence * 100}" + "\n" +
                     $"ВК: {characterCard.critChance * 100}";
         charDescription.text = characterCard.description;
-        charAbilities.text = $"<color=#{attackColor.ToHexString()}>Атакующая способность</color>: {characterCard.attackAbility}" + "\n" + "\n" +
-                    $"<color=#{defenceColor.ToHexString()}>Защитная способность</color>: {characterCard.defenceAbility}" + "\n" + "\n" +
-                    $"<color=#{buffColor.ToHexString()}>Усиливающая способность</color>: {characterCard.buffAbility}" + "\n" + "\n" +
-                    $"<color=#{passiveColor.ToHexString()}>Пассивная способность</color> {characterCard.passiveAbility}";
+        charAbilities.text = $"<color=#{ColorUtility.ToHtmlStringRGB(attackColor)}>Атакующая способность</color>: {characterCard.attackAbility}" + "\n" + "\n" +
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(defenceColor)}>Защитная способность</color>: {characterCard.defenceAbility}" + "\n" + "\n" +
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(buffColor)}>Усиливающая способность</color>: {characterCard.buffAbility}" + "\n" + "\n" +
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(passiveColor)}>Пассивная способность</color> {characterCard.passiveAbility}";
 
     }
 }

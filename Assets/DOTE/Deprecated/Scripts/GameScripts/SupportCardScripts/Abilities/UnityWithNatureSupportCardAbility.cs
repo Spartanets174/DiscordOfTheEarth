@@ -1,5 +1,4 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [Serializable]
@@ -85,7 +84,7 @@ public class UnityWithNatureSupportCardAbility : BaseSupport—ardAbility, ITurnCo
                 characterColor = battleSystem.enemyTextColor;
 
             }
-            battleSystem.gameLogCurrentText.Value = $"Ёффект дополнительного здоровь€ от карты \"≈динство с природой 2\" заканчиваетс€, {characterType} персонаж <color=#{characterColor.ToHexString()}>{character.CharacterName}</color> погибает";
+            battleSystem.gameLogCurrentText.Value = $"Ёффект дополнительного здоровь€ от карты \"≈динство с природой 2\" заканчиваетс€, {characterType} персонаж <color=#{ColorUtility.ToHtmlStringRGB(characterColor)}>{character.CharacterName}</color> погибает";
             GameObject.Destroy(character.gameObject);
         }
         OnReturnToNormal?.Invoke(this);

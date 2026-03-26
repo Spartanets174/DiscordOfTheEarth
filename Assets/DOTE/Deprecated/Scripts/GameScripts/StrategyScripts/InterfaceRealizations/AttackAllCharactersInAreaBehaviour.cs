@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class AttackAllCharactersInAreaBehaviour : ICardUsable
@@ -33,7 +31,7 @@ public class AttackAllCharactersInAreaBehaviour : ICardUsable
             }
 
             attackedCharacters.Add(character);
-            bool isDeath = character.Damage(damage, abilityName);           
+            bool isDeath = character.Damage(damage, abilityName);
 
             if (isDeath)
             {
@@ -50,7 +48,7 @@ public class AttackAllCharactersInAreaBehaviour : ICardUsable
                     characterColor = battleSystem.enemyTextColor;
 
                 }
-                battleSystem.gameLogCurrentText.Value = $"{characterType} персонаж <color=#{characterColor.ToHexString()}>{character.CharacterName}</color> погибает от эффекта карты \"{abilityName}\"";
+                battleSystem.gameLogCurrentText.Value = $"{characterType} персонаж <color=#{ColorUtility.ToHtmlStringRGB(characterColor)}>{character.CharacterName}</color> погибает от эффекта карты \"{abilityName}\"";
                 GameObject.Destroy(character.gameObject);
             }
         }

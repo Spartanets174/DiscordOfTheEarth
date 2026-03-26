@@ -1,9 +1,7 @@
 
 using DG.Tweening;
-using System;
 using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -74,14 +72,15 @@ public class BuyCardDisplay : MonoBehaviour
         yield return new WaitForSecondsRealtime(2);
         currentSequence = DOTween.Sequence();
         currentSequence.id = 1;
-        currentSequence.Append(NotEnoughtCaption.DOFade(0,2f))
-        .OnComplete(() => {
+        currentSequence.Append(NotEnoughtCaption.DOFade(0, 2f))
+        .OnComplete(() =>
+        {
             NotEnoughtCaption.color = Color.red;
             NotEnoughtCaption.gameObject.SetActive(false);
             currentSequence.Kill();
         });
         currentSequence.Play();
-        
+
     }
 
     public void SetCardInfo(Card card)
@@ -89,16 +88,16 @@ public class BuyCardDisplay : MonoBehaviour
         cardName.text = card.cardName;
         m_chosenCard = card;
         cardSprite.sprite = card.image;
-        cardPrice.text = "Цена "+card.Price.ToString()+"$";
+        cardPrice.text = "Цена " + card.Price.ToString() + "$";
         moneyOfPlayer.text = playerManager.Money.ToString() + "$";
 
         if (card is CharacterCard)
         {
             CharacterCard characterCard = (CharacterCard)card;
-            cardAbilities.text = $"<color=#{attackColor.ToHexString()}>Атакующая способность</color>: {characterCard.attackAbility}" + "\n" + "\n" +
-                    $"<color=#{defenceColor.ToHexString()}>Защитная способность</color>: {characterCard.defenceAbility}" + "\n" + "\n" +
-                    $"<color=#{buffColor.ToHexString()}>Усиливающая способность</color>: {characterCard.buffAbility}" + "\n" + "\n" +
-                    $"<color=#{passiveColor.ToHexString()}>Пассивная способность</color>: {characterCard.passiveAbility}";
+            cardAbilities.text = $"<color=#{ColorUtility.ToHtmlStringRGB(attackColor)}>Атакующая способность</color>: {characterCard.attackAbility}" + "\n" + "\n" +
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(defenceColor)}>Защитная способность</color>: {characterCard.defenceAbility}" + "\n" + "\n" +
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(buffColor)}>Усиливающая способность</color>: {characterCard.buffAbility}" + "\n" + "\n" +
+                    $"<color=#{ColorUtility.ToHtmlStringRGB(passiveColor)}>Пассивная способность</color>: {characterCard.passiveAbility}";
 
         }
         if (card is CardSupport)

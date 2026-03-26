@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UniRx;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class SelectCellsBehaviour : ICardSelectable
@@ -13,7 +12,7 @@ public class SelectCellsBehaviour : ICardSelectable
     public Vector2 range;
     private string m_selectCardTipText;
     private string m_keyCellsColor;
-    private CompositeDisposable disposables=new();
+    private CompositeDisposable disposables = new();
 
     public Cell clickedCell;
     public List<Cell> highlightedCells = new();
@@ -40,7 +39,7 @@ public class SelectCellsBehaviour : ICardSelectable
             float temp = range.x;
             range.x = range.y;
             range.y = temp;
- 
+
             OnHoverExit(clickedCell.gameObject);
             OnHoverEnter(clickedCell.gameObject);
             OnHover(clickedCell.gameObject);
@@ -63,7 +62,7 @@ public class SelectCellsBehaviour : ICardSelectable
             cell.OnHoverEnter += OnHoverEnter;
             cell.OnHoverExit += OnHoverExit;
             cell.OnHover += OnHover;
-        }       
+        }
     }
 
     private void OnHover(GameObject @object)
@@ -98,16 +97,16 @@ public class SelectCellsBehaviour : ICardSelectable
         Vector2 currentCellIndex = currentCell.CellIndex;
 
         float xStart = currentCellIndex.x - Mathf.Floor(range.x / 2);
-        float xEnd = currentCellIndex.x + Mathf.Ceil(range.x / 2)-1;
+        float xEnd = currentCellIndex.x + Mathf.Ceil(range.x / 2) - 1;
         float yStart = currentCellIndex.y - Mathf.Floor(range.y / 2);
-        float yEnd = currentCellIndex.y + Mathf.Ceil(range.y / 2)-1;
+        float yEnd = currentCellIndex.y + Mathf.Ceil(range.y / 2) - 1;
 
         currentCell.OnClick += OnSelectedInvoke;
         battleSystem.FieldController.InvokeActionOnField(x =>
-        {          
+        {
             Vector2 cellIndex = x.CellIndex;
-            if (cellIndex.x >= xStart && cellIndex.x<= xEnd && cellIndex.y >= yStart && cellIndex.y <= yEnd)
-            {                            
+            if (cellIndex.x >= xStart && cellIndex.x <= xEnd && cellIndex.y >= yStart && cellIndex.y <= yEnd)
+            {
                 highlightedCells.Add(x);
             }
         });
@@ -122,7 +121,8 @@ public class SelectCellsBehaviour : ICardSelectable
 
     public void CancelSelection()
     {
-        battleSystem.FieldController.InvokeActionOnField(x=> {
+        battleSystem.FieldController.InvokeActionOnField(x =>
+        {
             x.SetCellState(true);
             x.SetColor("normal");
             UnSubscribe(x);

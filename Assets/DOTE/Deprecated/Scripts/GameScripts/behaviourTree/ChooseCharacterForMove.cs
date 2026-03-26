@@ -1,9 +1,7 @@
 using NodeCanvas.Framework;
 using ParadoxNotion;
 using ParadoxNotion.Design;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ChooseCharacterForMove : ActionTask
@@ -27,7 +25,7 @@ public class ChooseCharacterForMove : ActionTask
     protected override void OnExecute()
     {
         EnemyCharacter chosenEnemyCharacter = ChooseChar();
-        if (chosenEnemyCharacter==null )
+        if (chosenEnemyCharacter == null)
         {
             EndAction(false);
             return;
@@ -60,7 +58,7 @@ public class ChooseCharacterForMove : ActionTask
             {
                 break;
             }
-            if (enemyCharacter.Speed>0)
+            if (enemyCharacter.Speed > 0)
             {
                 isCharValid = true;
             }
@@ -78,7 +76,7 @@ public class ChooseCharacterForMove : ActionTask
     private Cell GetCellToMove()
     {
         Cell currentCell = null;
-        if (possibleCells.Count==0)
+        if (possibleCells.Count == 0)
         {
             return null;
         }

@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class FormulaAttackSelectedСharactersBehaviour : ICardUsable
@@ -53,11 +50,11 @@ public class FormulaAttackSelectedСharactersBehaviour : ICardUsable
                     characterColor = battleSystem.enemyTextColor;
 
                 }
-                battleSystem.gameLogCurrentText.Value = $"{characterType} персонаж <color=#{characterColor.ToHexString()}>{character.CharacterName}</color> погибает от эффекта карты \"{abilityName}\"";
+                battleSystem.gameLogCurrentText.Value = $"{characterType} персонаж <color=#{ColorUtility.ToHtmlStringRGB(characterColor)}>{character.CharacterName}</color> погибает от эффекта карты \"{abilityName}\"";
                 GameObject.Destroy(character.gameObject);
             }
 
             OnCardUse?.Invoke();
-        }       
+        }
     }
 }

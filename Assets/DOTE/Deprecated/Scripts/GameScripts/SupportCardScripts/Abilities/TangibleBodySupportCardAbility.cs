@@ -1,5 +1,4 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [Serializable]
@@ -87,7 +86,7 @@ public class TangibleBodySupportCardAbility : BaseSupportСardAbility, ITurnCount
                 characterColor = battleSystem.enemyTextColor;
 
             }
-            battleSystem.gameLogCurrentText.Value = $"Эффект дополнительного здоровья от карты \"Осязаемое тело\" заканчивается, {characterType} персонаж <color=#{characterColor.ToHexString()}>{character.CharacterName}</color> погибает";
+            battleSystem.gameLogCurrentText.Value = $"Эффект дополнительного здоровья от карты \"Осязаемое тело\" заканчивается, {characterType} персонаж <color=#{ColorUtility.ToHtmlStringRGB(characterColor)}>{character.CharacterName}</color> погибает";
             GameObject.Destroy(character.gameObject);
         }
         OnReturnToNormal?.Invoke(this);

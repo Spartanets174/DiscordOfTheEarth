@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UniRx;
-using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -142,7 +141,7 @@ public class BattleSystem : StateMachine, ILoadable
         /*EnemyController.StopTree();*/
         PlayerTurn playerTurn = new(this);
         SetState(playerTurn);
-        OnPlayerTurnStarted?.Invoke(playerTurn);      
+        OnPlayerTurnStarted?.Invoke(playerTurn);
     }
     [ContextMenu("SetEnemyTurn")]
     public void SetEnemyTurn()
@@ -151,7 +150,7 @@ public class BattleSystem : StateMachine, ILoadable
         EnemyTurn enemyTurn = new(this);
         SetState(enemyTurn);
         OnEnemyTurnStarted?.Invoke(enemyTurn);
-        
+
     }
     public void SetWin()
     {
@@ -185,7 +184,7 @@ public class BattleSystem : StateMachine, ILoadable
 
         int cubeValue = UnityEngine.Random.Range(1, 6);
 
-        gameLogCurrentText.Value = $"На кубике выпало <color=#{infoColor.ToHexString()}>{cubeValue}</color>";
+        gameLogCurrentText.Value = $"На кубике выпало <color=#{ColorUtility.ToHtmlStringRGB(infoColor)}>{cubeValue}</color>";
 
         if (cubeValue % 2 == 0)
         {

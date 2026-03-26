@@ -1,7 +1,5 @@
-using System;
 using TMPro;
 using UniRx;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -176,7 +174,7 @@ public class GameUICoordinator : MonoBehaviour, ILoadable
         settingsController.CanPause = false;
         Observable.EveryUpdate().Where(x => Input.GetKey(KeyCode.Escape) && card != null).Subscribe(x =>
         {
-             CancelChoosing(card.gameObject);
+            CancelChoosing(card.gameObject);
         }).AddTo(disposablesForCards);
         card.OnClick -= battleSystem.OnChooseCharacterButton;
         card.OnClick += CancelChoosing;
@@ -189,11 +187,11 @@ public class GameUICoordinator : MonoBehaviour, ILoadable
         disposablesForCards = new();
         GameCharacterCardDisplay cardDisplay = card.GetComponent<GameCharacterCardDisplay>();
         cardDisplay.OnClick -= CancelChoosing;
-        if (battleSystem.PlayerController.PlayerCharactersObjects.Count!=5)
+        if (battleSystem.PlayerController.PlayerCharactersObjects.Count != 5)
         {
             cardDisplay.OnClick += battleSystem.OnChooseCharacterButton;
         }
-       
+
         battleSystem.FieldController.TurnOffCells();
         playerControllerPresenter.EbableUnspawnedCards();
     }
@@ -244,9 +242,9 @@ public class GameUICoordinator : MonoBehaviour, ILoadable
         }
         else
         {
-            endGameText.text =  $"Увы, {battleSystem.PlayerController.PlayerDataController.CharacterName}, но вы проиграли! Но не отчаивайтесь, за старания мы дарим вам 500 валюты!";
+            endGameText.text = $"Увы, {battleSystem.PlayerController.PlayerDataController.CharacterName}, но вы проиграли! Но не отчаивайтесь, за старания мы дарим вам 500 валюты!";
         }
-        
+
         endGameInterface.SetActive(true);
         gameInterface.SetActive(false);
     }
@@ -271,7 +269,7 @@ public class GameUICoordinator : MonoBehaviour, ILoadable
     }
     private void OnPlayerTurnStart(PlayerTurn playerTurn)
     {
-        AddMessageToGameLog($"<color=#{changeTurnTextColor.ToHexString()}>Ваш ход</color>");
+        AddMessageToGameLog($"<color=#{ColorUtility.ToHtmlStringRGB(changeTurnTextColor)}>Ваш ход</color>");
         endMoveButton.interactable = true;
         foreach (var supportCard in cardSupportAbilitiesController.GameSupportCards)
         {
@@ -318,7 +316,7 @@ public class GameUICoordinator : MonoBehaviour, ILoadable
         endMoveButton.interactable = false;
 
         cardSupportAbilitiesController.DisableSupportCards();
-        AddMessageToGameLog($"<color=#{changeTurnTextColor.ToHexString()}>Ход противника</color>");;
+        AddMessageToGameLog($"<color=#{ColorUtility.ToHtmlStringRGB(changeTurnTextColor)}>Ход противника</color>"); ;
 
         foreach (var supportCard in cardSupportAbilitiesController.GameSupportCards)
         {
@@ -334,20 +332,20 @@ public class GameUICoordinator : MonoBehaviour, ILoadable
     {
         if (character is PlayerCharacter)
         {
-            AddMessageToGameLog($"Союзный юнит <color=#{playerTextColor.ToHexString()}>{character.CharacterName}</color>  убит");
+            AddMessageToGameLog($"Союзный юнит <color=#{ColorUtility.ToHtmlStringRGB(playerTextColor)}>{character.CharacterName}</color>  убит");
         }
         else
         {
-            AddMessageToGameLog($"Вражеский юнит <color=#{enemyTextColor.ToHexString()}>{character.CharacterName}</color> убит");
+            AddMessageToGameLog($"Вражеский юнит <color=#{ColorUtility.ToHtmlStringRGB(enemyTextColor)}>{character.CharacterName}</color> убит");
         }
     }
 
     private void LogHeal(Character healedCharacter, string characterUsedHeal, float healAmount)
     {
-        Color characterColor = healedCharacter is PlayerCharacter? playerTextColor: enemyTextColor;
+        Color characterColor = healedCharacter is PlayerCharacter ? playerTextColor : enemyTextColor;
 
         SetChosenCharDeatils(healedCharacter);
-        AddMessageToGameLog($"<color=#{characterColor.ToHexString()}>{characterUsedHeal}</color> восстанавливает юниту <color=#{characterColor.ToHexString()}>{healedCharacter.CharacterName}</color> <color=#{amountTextColor.ToHexString()}>{healAmount * 100:00.00}</color> единиц здоровья");
+        AddMessageToGameLog($"<color=#{ColorUtility.ToHtmlStringRGB(characterColor)}>{characterUsedHeal}</color> восстанавливает юниту <color=#{ColorUtility.ToHtmlStringRGB(characterColor)}>{healedCharacter.CharacterName}</color> <color=#{ColorUtility.ToHtmlStringRGB(amountTextColor)}>{healAmount * 100:00.00}</color> единиц здоровья");
     }
     private void LogCharacterDamage(Character character, string enemyName, float finalDamage)
     {
@@ -365,11 +363,11 @@ public class GameUICoordinator : MonoBehaviour, ILoadable
 
         if (finalDamage > 0)
         {
-            AddMessageToGameLog($"<color=#{secondCharacterColor.ToHexString()}>{enemyName}</color> наносит <color=#{amountTextColor.ToHexString()}>{finalDamage * 100:00.00}</color> единиц урона юниту <color=#{characterColor.ToHexString()}>{character.CharacterName}</color>  ");
+            AddMessageToGameLog($"<color=#{ColorUtility.ToHtmlStringRGB(secondCharacterColor)}>{enemyName}</color> наносит <color=#{ColorUtility.ToHtmlStringRGB(amountTextColor)}>{finalDamage * 100:00.00}</color> единиц урона юниту <color=#{ColorUtility.ToHtmlStringRGB(characterColor)}>{character.CharacterName}</color>  ");
         }
         else
         {
-            AddMessageToGameLog($"<color=#{characterColor.ToHexString()}>{character.CharacterName}</color> избежал получения урона от <color=#{secondCharacterColor.ToHexString()}>{enemyName}</color>");
+            AddMessageToGameLog($"<color=#{ColorUtility.ToHtmlStringRGB(characterColor)}>{character.CharacterName}</color> избежал получения урона от <color=#{ColorUtility.ToHtmlStringRGB(secondCharacterColor)}>{enemyName}</color>");
         }
     }
     private void AddMessageToGameLog(string message)

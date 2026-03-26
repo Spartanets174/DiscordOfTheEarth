@@ -1,7 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEngine;
 
 public class BookOfCardsController : CardController
 {
@@ -16,9 +13,9 @@ public class BookOfCardsController : CardController
 
     public bool CanEquipCharacterCard(CharacterCard card)
     {
-        if(card == null) return false;
+        if (card == null) return false;
         int count = 0;
-        int max=5;
+        int max = 5;
         for (int j = 0; j < m_PlayerManager.DeckUserCharCards.Count; j++)
         {
             if (m_PlayerManager.DeckUserCharCards[j].Class == card.Class)
@@ -34,7 +31,7 @@ public class BookOfCardsController : CardController
         {
             max = 1;
         }
-        if (count < max&& m_PlayerManager.DeckUserCharCards.Count<5)
+        if (count < max && m_PlayerManager.DeckUserCharCards.Count < 5)
         {
             m_PlayerManager.DeckUserCharCards.Add(card);
             m_PlayerManager.AllUserCharCards.Remove(card);

@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class FormulaAttackEnemyCharactersInAreaBehaviour : ICardUsable
@@ -12,7 +10,7 @@ public class FormulaAttackEnemyCharactersInAreaBehaviour : ICardUsable
     private BattleSystem battleSystem;
     private string abilityName;
     private Character chosenCharacter;
-    public FormulaAttackEnemyCharactersInAreaBehaviour(float damage, BattleSystem battleSystem,Character chosenCharacter, string abilityName)
+    public FormulaAttackEnemyCharactersInAreaBehaviour(float damage, BattleSystem battleSystem, Character chosenCharacter, string abilityName)
     {
         cellsToAttack = new();
         attackedCharacters = new();
@@ -52,7 +50,7 @@ public class FormulaAttackEnemyCharactersInAreaBehaviour : ICardUsable
                     characterColor = battleSystem.enemyTextColor;
 
                 }
-                battleSystem.gameLogCurrentText.Value = $"{characterType} персонаж <color=#{characterColor.ToHexString()}>{character.CharacterName}</color> погибает от эффекта карты \"{abilityName}\"";
+                battleSystem.gameLogCurrentText.Value = $"{characterType} персонаж <color=#{ColorUtility.ToHtmlStringRGB(characterColor)}>{character.CharacterName}</color> погибает от эффекта карты \"{abilityName}\"";
                 GameObject.Destroy(character.gameObject);
             }
         }

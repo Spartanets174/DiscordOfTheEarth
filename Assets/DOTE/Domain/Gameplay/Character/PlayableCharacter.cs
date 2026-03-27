@@ -1,8 +1,11 @@
-using DOTE.Gameplay.Domain.Item;
+using DOTE.Gameplay.Domain.Field;
 using DOTE.SharedKernel.Domain;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Zenject;
+using Random = UnityEngine.Random;
 
 namespace DOTE.Gameplay.Domain.Character
 {
@@ -33,12 +36,10 @@ namespace DOTE.Gameplay.Domain.Character
         public FloatCharacterCharacteristic UseAbilityCost { get; private set; }
 
         public bool IsCharacterDied;
-        public bool IgnoreCellMoveCost { get; private set; }
-        public bool IgnoreSwampCellMoveCost { get; private set; }
         public bool CanUseAbilities { get; private set; }
         public bool CanAttack { get; private set; }
         public bool CanBeDamaged { get; private set; }
-        public (int, int) PositionOnField { get; private set; }
+        public Hex PositionOnField { get; private set; }
 
         private ACharacterPassiveAbility passiveAbility;
 
@@ -65,7 +66,10 @@ namespace DOTE.Gameplay.Domain.Character
         private Dictionary<Class, bool> blockDamageFromClassMap;
         private Dictionary<Race, bool> blockDamageFromRaseMap;
 
-        public PlayableCharacter(string characterId, string ownerId, CharacterInformation characterInformation, FloatLimitedCharacterCharacteristic health, IntLimitedCharacterCharacteristic speed, FloatCharacterCharacteristic physicalAttack, FloatCharacterCharacteristic magicalAttack, FloatCharacterCharacteristic physicalDefence, FloatCharacterCharacteristic magicalDefence, FloatLimitedCharacterCharacteristic criticalDamageChance, FloatCharacterCharacteristic criticalDamageValue, FloatCharacterCharacteristic physicalDamageMultiplier, FloatCharacterCharacteristic magicalDamageMultiplier, FloatLimitedCharacterCharacteristic freeAttackChance, FloatLimitedCharacterCharacteristic avoidDamageChance, IntCharacterCharacteristic attackRange, FloatCharacterCharacteristic useAbilityCost, ACharacterActiveAbility attackAbility, ACharacterActiveAbility protectiveAbility, ACharacterActiveAbility enchancingAbility, ACharacterPassiveAbility passiveAbility)
+        private Dictionary<Type, int> cellMoveCostByCellType;
+        private Dictionary<Type, bool> ignoreCellMoveCostByCellType;
+
+        public PlayableCharacter(string characterId, string ownerId, CharacterInformation characterInformation, FloatLimitedCharacterCharacteristic health, IntLimitedCharacterCharacteristic speed, FloatCharacterCharacteristic physicalAttack, FloatCharacterCharacteristic magicalAttack, FloatCharacterCharacteristic physicalDefence, FloatCharacterCharacteristic magicalDefence, FloatLimitedCharacterCharacteristic criticalDamageChance, FloatCharacterCharacteristic criticalDamageValue, FloatCharacterCharacteristic physicalDamageMultiplier, FloatCharacterCharacteristic magicalDamageMultiplier, FloatLimitedCharacterCharacteristic freeAttackChance, FloatLimitedCharacterCharacteristic avoidDamageChance, IntCharacterCharacteristic attackRange, FloatCharacterCharacteristic useAbilityCost, ACharacterActiveAbility attackAbility, ACharacterActiveAbility protectiveAbility, ACharacterActiveAbility enchancingAbility, ACharacterPassiveAbility passiveAbility, Dictionary<Type, int> cellMoveCostByCellType)
         {
             CharacterId = characterId;
             OwnerId = ownerId;
@@ -98,6 +102,9 @@ namespace DOTE.Gameplay.Domain.Character
             blockDamageFromClassMap = new();
             blockDamageFromRaseMap = new();
 
+            this.cellMoveCostByCellType = new();
+            ignoreCellMoveCostByCellType = new();
+
             foreach (Race characterRace in Race.GetValues(typeof(Race)))
             {
                 attackMultiplierByRaceMap.Add(characterRace, 1);
@@ -109,6 +116,10 @@ namespace DOTE.Gameplay.Domain.Character
                 attackMultiplierByClassMap.Add(characterClass, 1);
                 damageMultiplierByClassMap.Add(characterClass, 1);
                 blockDamageFromClassMap.Add(characterClass, false);
+            }
+            foreach (var item in cellMoveCostByCellType)
+            {
+                this.cellMoveCostByCellType.Add(item.Key, item.Value);
             }
 
             this.attackAbility.SetAbilityOwner(this);
@@ -186,13 +197,13 @@ namespace DOTE.Gameplay.Domain.Character
             eventBus.Publish(new CharacterHealed(CharacterId, amount));
         }
 
-        public void Move((int,int) position, int moveCost)
+        public void Move(Hex position, int moveCost)
         {
             if (moveCost > Speed.CurrentValue)
             {
                 return;
             }
-            (int, int) oldPosition = PositionOnField;
+            Hex oldPosition = PositionOnField;
             Speed.DecreaseCurrentValue(moveCost);
             PositionOnField = position;
             eventBus.Publish(new CharacterMoved(CharacterId, oldPosition, PositionOnField));
@@ -278,9 +289,54 @@ namespace DOTE.Gameplay.Domain.Character
         public void SetCanBeDamaged(bool value) => CanBeDamaged = value;
         public void SetIgnorePysicalDamage(bool value) => ignorePysicalDamage = value;
         public void SetIgnoreMagicalDamage(bool value) => ignoreMagicalDamage = value;
-        public void SetIgnoreCellMoveCost(bool value) => IgnoreCellMoveCost = value;
-        public void SetIgnoreSwampCellMoveCost(bool value) => IgnoreSwampCellMoveCost = value;
 
+        public void SetCellMoveCostByCellType(Type cellType, int moveCost)
+        {
+            if (cellMoveCostByCellType.ContainsKey(cellType))
+            {
+                cellMoveCostByCellType[cellType] = moveCost;
+            }
+            else
+            {
+                cellMoveCostByCellType.Add(cellType, moveCost);
+            }
+        }
+
+        public void SetIgnoreCellMoveCostByCellType(Type cellType, bool value)
+        {
+            if (ignoreCellMoveCostByCellType.ContainsKey(cellType))
+            {
+                ignoreCellMoveCostByCellType[cellType] = value;
+            }
+            else
+            {
+                ignoreCellMoveCostByCellType.Add(cellType, value);
+            }          
+        }
+
+        public int GetMinMoveCost()
+        {
+            return cellMoveCostByCellType.Values.Min();
+        }
+
+        public int GetCellMoveCostByCellType(Type cellType)
+        {
+            if (GetIgnoreCellMoveCostByCellType(cellType))
+            {
+                return 0;
+            }
+
+            int moveCost = 0;
+            cellMoveCostByCellType.TryGetValue(cellType, out moveCost);
+            return moveCost;
+        }
+
+        public bool GetIgnoreCellMoveCostByCellType(Type cellType)
+        {
+            bool ignoreMoveCost = false;
+            ignoreCellMoveCostByCellType.TryGetValue(cellType, out ignoreMoveCost);
+            return ignoreMoveCost;
+        }
 
         public void IncreaseAttackMultiplierByClass(Class characterClass, float increaseValue)
         {

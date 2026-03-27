@@ -1,3 +1,4 @@
+using DOTE.Gameplay.Domain.Field;
 using DOTE.SharedKernel.Domain;
 
 namespace DOTE.Gameplay.Domain.Character
@@ -5,10 +6,10 @@ namespace DOTE.Gameplay.Domain.Character
     public class CharacterMoved : IDomainEvent
     {
         private string movedCharacterId;
-        private (int, int) fromCellId;
-        private (int, int) toCellId;
+        private Hex fromCellId;
+        private Hex toCellId;
 
-        public CharacterMoved(string movedCharacterId, (int, int) fromCellId, (int, int) toCellId)
+        public CharacterMoved(string movedCharacterId, Hex fromCellId, Hex toCellId)
         {
             this.movedCharacterId = movedCharacterId;
             this.fromCellId = fromCellId;
@@ -16,7 +17,7 @@ namespace DOTE.Gameplay.Domain.Character
         }
 
         public string GetMovedCharacterId() => movedCharacterId;
-        public (int, int) GetFromCellId() => fromCellId;
-        public (int, int) GetToCellId() => toCellId;
+        public Hex GetFromCellId() => fromCellId;
+        public Hex GetToCellId() => toCellId;
     }
 }

@@ -1,4 +1,5 @@
 using DOTE.Gameplay.Domain.Character;
+using DOTE.Gameplay.Domain.Field;
 using DOTE.SharedKernel.Domain;
 
 namespace DOTE.Gameplay.Application.Character
@@ -26,10 +27,10 @@ namespace DOTE.Gameplay.Application.Character
             character.Heal(amount, ignoreMax);
         }
 
-        public void MoveCharacter(string characterId, (int, int) targetPosition, int moveCost)
+        public void MoveCharacter(string characterId, Hex targetHex, int moveCost)
         {
             PlayableCharacter character = characterRepository.GetCharacterById(characterId);
-            character.Move(targetPosition, moveCost);
+            character.Move(targetHex, moveCost);
         }
 
         public void ResetCharacter(string characterId)

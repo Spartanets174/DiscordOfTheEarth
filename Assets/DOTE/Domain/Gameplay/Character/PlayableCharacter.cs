@@ -33,12 +33,15 @@ namespace DOTE.Gameplay.Domain.Character
         public FloatLimitedCharacterCharacteristic AvoidDamageChance { get; private set; }
 
         public IntCharacterCharacteristic AttackRange { get; private set; }
-        public FloatCharacterCharacteristic UseAbilityCost { get; private set; }
+        public IntCharacterCharacteristic UseAbilityCost { get; private set; }
+        public IntCharacterCharacteristic AttackCost { get; private set; }
 
         public bool IsCharacterDied;
         public bool CanUseAbilities { get; private set; }
         public bool CanAttack { get; private set; }
         public bool CanBeDamaged { get; private set; }
+        public bool IsAttackedOnMove { get; private set; }
+
         public Hex PositionOnField { get; private set; }
 
         private ACharacterPassiveAbility passiveAbility;
@@ -49,7 +52,7 @@ namespace DOTE.Gameplay.Domain.Character
 
         private ACharacterActiveAbility currentUsingAbility;
 
-        private bool isAttackedOnMove;
+
         private bool ignorePysicalDamage;
         private bool ignoreMagicalDamage;
 
@@ -69,7 +72,29 @@ namespace DOTE.Gameplay.Domain.Character
         private Dictionary<Type, int> cellMoveCostByCellType;
         private Dictionary<Type, bool> ignoreCellMoveCostByCellType;
 
-        public PlayableCharacter(string characterId, string ownerId, CharacterInformation characterInformation, FloatLimitedCharacterCharacteristic health, IntLimitedCharacterCharacteristic speed, FloatCharacterCharacteristic physicalAttack, FloatCharacterCharacteristic magicalAttack, FloatCharacterCharacteristic physicalDefence, FloatCharacterCharacteristic magicalDefence, FloatLimitedCharacterCharacteristic criticalDamageChance, FloatCharacterCharacteristic criticalDamageValue, FloatCharacterCharacteristic physicalDamageMultiplier, FloatCharacterCharacteristic magicalDamageMultiplier, FloatLimitedCharacterCharacteristic freeAttackChance, FloatLimitedCharacterCharacteristic avoidDamageChance, IntCharacterCharacteristic attackRange, FloatCharacterCharacteristic useAbilityCost, ACharacterActiveAbility attackAbility, ACharacterActiveAbility protectiveAbility, ACharacterActiveAbility enchancingAbility, ACharacterPassiveAbility passiveAbility, Dictionary<Type, int> cellMoveCostByCellType)
+        public PlayableCharacter(string characterId,
+            string ownerId,
+            CharacterInformation characterInformation,
+            FloatLimitedCharacterCharacteristic health,
+            IntLimitedCharacterCharacteristic speed,
+            FloatCharacterCharacteristic physicalAttack,
+            FloatCharacterCharacteristic magicalAttack,
+            FloatCharacterCharacteristic physicalDefence,
+            FloatCharacterCharacteristic magicalDefence,
+            FloatLimitedCharacterCharacteristic criticalDamageChance,
+            FloatCharacterCharacteristic criticalDamageValue,
+            FloatCharacterCharacteristic physicalDamageMultiplier,
+            FloatCharacterCharacteristic magicalDamageMultiplier,
+            FloatLimitedCharacterCharacteristic freeAttackChance,
+            FloatLimitedCharacterCharacteristic avoidDamageChance,
+            IntCharacterCharacteristic attackRange,
+            IntCharacterCharacteristic useAbilityCost,
+            IntCharacterCharacteristic attackCost,
+            ACharacterActiveAbility attackAbility,
+            ACharacterActiveAbility protectiveAbility,
+            ACharacterActiveAbility enchancingAbility,
+            ACharacterPassiveAbility passiveAbility,
+            Dictionary<Type, int> cellMoveCostByCellType)
         {
             CharacterId = characterId;
             OwnerId = ownerId;
@@ -88,6 +113,7 @@ namespace DOTE.Gameplay.Domain.Character
             AvoidDamageChance = avoidDamageChance;
             AttackRange = attackRange;
             UseAbilityCost = useAbilityCost;
+            AttackCost = attackCost;
             this.attackAbility = attackAbility;
             this.protectiveAbility = protectiveAbility;
             this.enchancingAbility = enchancingAbility;
@@ -134,10 +160,10 @@ namespace DOTE.Gameplay.Domain.Character
 
         public void Attack(PlayableCharacter target)
         {
-            if (CanAttack && !isAttackedOnMove)
+            if (CanAttack && !IsAttackedOnMove)
             {
                 target.TakeDamage(this);
-                isAttackedOnMove = true;
+                IsAttackedOnMove = true;
             }
         }
 
@@ -212,7 +238,7 @@ namespace DOTE.Gameplay.Domain.Character
         public void ResetCharacter()
         {
             Speed.ToStartValueIfLower();
-            isAttackedOnMove = false;
+            IsAttackedOnMove = false;
         }
 
         public void RemoveDebuffs()
@@ -311,7 +337,7 @@ namespace DOTE.Gameplay.Domain.Character
             else
             {
                 ignoreCellMoveCostByCellType.Add(cellType, value);
-            }          
+            }
         }
 
         public int GetMinMoveCost()
@@ -336,6 +362,11 @@ namespace DOTE.Gameplay.Domain.Character
             bool ignoreMoveCost = false;
             ignoreCellMoveCostByCellType.TryGetValue(cellType, out ignoreMoveCost);
             return ignoreMoveCost;
+        }
+
+        public bool IsEnemy(string targetOwnerGuid)
+        {
+            return string.IsNullOrEmpty(targetOwnerGuid) ? false : targetOwnerGuid != OwnerId;
         }
 
         public void IncreaseAttackMultiplierByClass(Class characterClass, float increaseValue)

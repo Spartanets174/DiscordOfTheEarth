@@ -23,6 +23,8 @@ namespace DOTE.Gameplay.Infrastructure.Character
 
         [SerializeField]
         private int defaultAbilityUsingCost = 11;
+        [SerializeField]
+        private int defaultAttackCost = 2;
 
         public CharacterBuilder CreateBuilder(string characterId, string ownerId, Dictionary<Type, int> defaultMoveCostByCellType)
         {
@@ -35,6 +37,7 @@ namespace DOTE.Gameplay.Infrastructure.Character
                 enchancingAbilityBuilderSO.CreateBuilder(),
                 passiveAbilityBuilderSO.CreateBuilder(),
                 defaultAbilityUsingCost,
+                defaultAttackCost,
                 defaultMoveCostByCellType);
         }
     }
@@ -49,12 +52,13 @@ namespace DOTE.Gameplay.Infrastructure.Character
         private CharacterActiveAbilityBuilder protectiveAbilityBuilder;
         private CharacterActiveAbilityBuilder enchancingAbilityBuilder;
         private CharacterPassiveAbilityBuilder passiveAbilityBuilder;
-  
+
         private int defaultAbilityUsingCost;
+        private int defaultAttackCost;
 
         private Dictionary<Type, int> defaultMoveCostByCellType;
 
-        public CharacterBuilder(Type type, string characterId, string ownerId, CharacterConfig characterConfig, CharacterActiveAbilityBuilder attackAbilityBuilder, CharacterActiveAbilityBuilder protectiveAbilityBuilder, CharacterActiveAbilityBuilder enchancingAbilityBuilder, CharacterPassiveAbilityBuilder passiveAbilityBuilder, int defaultAbilityUsingCost, Dictionary<Type, int> defaultMoveCostByCellType) : base(type)
+        public CharacterBuilder(Type type, string characterId, string ownerId, CharacterConfig characterConfig, CharacterActiveAbilityBuilder attackAbilityBuilder, CharacterActiveAbilityBuilder protectiveAbilityBuilder, CharacterActiveAbilityBuilder enchancingAbilityBuilder, CharacterPassiveAbilityBuilder passiveAbilityBuilder, int defaultAbilityUsingCost, int defaultAttackCost, Dictionary<Type, int> defaultMoveCostByCellType) : base(type)
         {
             this.characterId = characterId;
             this.ownerId = ownerId;
@@ -64,6 +68,7 @@ namespace DOTE.Gameplay.Infrastructure.Character
             this.enchancingAbilityBuilder = enchancingAbilityBuilder;
             this.passiveAbilityBuilder = passiveAbilityBuilder;
             this.defaultAbilityUsingCost = defaultAbilityUsingCost;
+            this.defaultAttackCost = defaultAttackCost;
             this.defaultMoveCostByCellType = defaultMoveCostByCellType;
         }
 
@@ -89,12 +94,13 @@ namespace DOTE.Gameplay.Infrastructure.Character
                 new FloatLimitedCharacterCharacteristic(1, 0),
                 new FloatLimitedCharacterCharacteristic(1, 0),
                 new IntCharacterCharacteristic(characterConfig.GetAttackRange()),
-                new FloatCharacterCharacteristic(defaultAbilityUsingCost),
+                new IntCharacterCharacteristic(defaultAbilityUsingCost),
+                new IntCharacterCharacteristic(defaultAttackCost),
                 attackAbilityBuilder.Build(),
                 protectiveAbilityBuilder.Build(),
                 enchancingAbilityBuilder.Build(),
-                passiveAbilityBuilder.Build()),
-                defaultMoveCostByCellType;
+                passiveAbilityBuilder.Build(),
+                defaultMoveCostByCellType);
         }
 
     }

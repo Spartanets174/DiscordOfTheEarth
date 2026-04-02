@@ -1,6 +1,8 @@
 using DOTE.Gameplay.Domain.Character;
 using DOTE.SharedKernel.Domain;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace DOTE.Gameplay.Domain.Field
 {
@@ -15,9 +17,9 @@ namespace DOTE.Gameplay.Domain.Field
 
             cellsMap = new();
 
-            foreach (var cellFirst in cells)
+            foreach (var cellsLine in cells)
             {
-                foreach (var cell in cellFirst)
+                foreach (var cell in cellsLine)
                 {
                     cellsMap.Add(cell.Hex, cell);
                 }
@@ -31,6 +33,37 @@ namespace DOTE.Gameplay.Domain.Field
             return targetCell;
         }
 
+        public List<ACell> GetCellsInRange(Hex centerCordinate, int x, int y)
+        {
+            List<ACell> result = new();
+
+            if (cellsMap.TryGetValue(centerCordinate, out ACell center))
+            {
+                // Вычисляем границы прямоугольника
+                int qMin = center.Hex.Q - x / 2;
+                int qMax = center.Hex.Q + x / 2;
+                int rMin = center.Hex.R - y / 2;
+                int rMax = center.Hex.R + y / 2;
+
+                // Перебираем все возможные q и r в прямоугольнике
+                for (int q = qMin; q <= qMax; q++)
+                {
+                    for (int r = rMin; r <= rMax; r++)
+                    {
+                        int s = -q - r;   // Третья координата из условия q+r+s=0
+                        Hex hexInRange = new(q, r, s);
+
+                        if (cellsMap.TryGetValue(hexInRange, out ACell targetCell))
+                        {
+                            result.Add(targetCell);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public int CalculatePathMoveCostForCharacter(List<ACell> path, PlayableCharacter character)
         {
             int cost = 0;
@@ -39,6 +72,94 @@ namespace DOTE.Gameplay.Domain.Field
                 cost += GetMoveCostToCellForCharacter(cell, character);
             }
             return cost;
+        }
+
+        public List<AttackTargetInfo> GetPossibleCellsWithEnemiesForAttack(PlayableCharacter character, int remainingActionPoints)
+        {
+            Dictionary<ACell, int> cellsForMove = GetCellsForMove(character, remainingActionPoints);
+            List<AttackTargetInfo> result = new List<AttackTargetInfo>();
+            List<ACell> cellsWithEnemies = cellsMap.Values.Where(x => character.IsEnemy(x.OccupierOwnerId)).ToList();
+            ACell characterCell = cellsMap[character.PositionOnField];
+
+            foreach (ACell cellWithEnemy in cellsWithEnemies)
+            {
+                bool canAttackFromCurrent = CanAttackFromCell(characterCell, cellWithEnemy, character);
+
+                ACell bestCell = null;
+                int bestCost = 0;
+                bool canAttackAfterMove = false;
+
+                if (!canAttackFromCurrent)
+                {
+                    // Поиск клетки, с которой можно атаковать после перемещения
+                    foreach (var cellForMove in cellsForMove)
+                    {
+                        ACell cell = cellForMove.Key;
+                        int moveCost = cellForMove.Value;
+
+                        // Проверяем, хватит ли ОД на атаку после перемещения
+                        if (remainingActionPoints - moveCost < character.AttackCost.CurrentValue) continue;
+
+                        //Можем ли мы атаковать с клетки, на которую мы можем переместиться
+                        canAttackAfterMove = CanAttackFromCell(cell, cellWithEnemy, character);
+
+                        if (canAttackAfterMove && moveCost < bestCost)
+                        {
+                            bestCost = moveCost;
+                            bestCell = cell;
+                        }
+                    }
+                }
+
+                if (canAttackFromCurrent || canAttackAfterMove)
+                {
+                    result.Add(new AttackTargetInfo(
+                        cellWithEnemy,
+                        canAttackFromCurrent,
+                        canAttackAfterMove,
+                        canAttackAfterMove ? bestCell : characterCell,
+                        canAttackAfterMove ? bestCost : 0));
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Выполняет поиск всех доступных клеток для передвижения алгоритмом Дейкстры
+        /// </summary>
+        /// <returns>Словарь клеток с ценой перемещения на каждую</returns>
+        public Dictionary<ACell, int> GetCellsForMove(PlayableCharacter character, int remainingActionPoints)
+        {
+            PriorityQueue<ACell> frontier = new PriorityQueue<ACell>();
+            Dictionary<ACell, int> costSoFar = new Dictionary<ACell, int>();
+
+            List<ACell> cellsForMove = new();
+            int maxPossibleCost = Mathf.Min(character.Speed.CurrentValue, remainingActionPoints);
+            ACell startCell = cellsMap[character.PositionOnField];
+
+            costSoFar[startCell] = 0;
+            frontier.Enqueue(startCell, 0);
+
+            while (frontier.Count > 0)
+            {
+                ACell current = frontier.Dequeue();
+
+                foreach (ACell next in GetNeighbors(current))
+                {
+                    int newCost = costSoFar[current] + GetMoveCostToCellForCharacter(next, character);
+
+                    if (newCost > maxPossibleCost) continue;
+
+                    if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
+                    {
+                        costSoFar[next] = newCost;
+                        frontier.Enqueue(next, newCost);
+                    }
+                }
+            }
+
+            return costSoFar;
         }
 
         public List<ACell> GetMovePath(PlayableCharacter character, ACell goal, int remainingActionPoints)
@@ -62,88 +183,6 @@ namespace DOTE.Gameplay.Domain.Field
             path.Reverse();
 
             return path;
-        }
-
-
-        public CellsForMoveAndAttack GetCellsForMoveAndAttackForCharacter(PlayableCharacter character, int remainingActionPoints)
-        {
-            CellsForMoveAndAttack cellsForMoveAndAttack = FindCellsForMoveAndAttackInMoveRangeDijkstrasAlgorithm(character, remainingActionPoints);
-            List<ACell> cellsForAttack = new();
-            return cellsForMoveAndAttack;
-        }
-
-        private CellsForMoveAndAttack FindCellsForMoveAndAttackInMoveRangeDijkstrasAlgorithm(PlayableCharacter character, int remainingActionPoints)
-        {
-            List<ACell> cellsForMove = new();
-            List<ACell> cellsForAttack = new();
-
-            PriorityQueue<ACell> frontier = new PriorityQueue<ACell>();
-
-            //хранит общую стоимость перемещения от начальной точки, также называемую «полем расстояния»
-            Dictionary<ACell, int> costSoFar = new Dictionary<ACell, int>();
-            Dictionary<ACell, ACell> cameFromMove = new Dictionary<ACell, ACell>();
-            Dictionary<ACell, ACell> cameFromAttack = new Dictionary<ACell, ACell>();
-
-            ACell start = cellsMap[character.PositionOnField];
-
-            Class characterClass = character.CharacterInformation.GetCharacterClass();
-            bool ignoreCharactersForAttack = characterClass == Class.Archer || characterClass == Class.Magician;
-
-            frontier.Enqueue(start, 0);
-            cameFromAttack[start] = null;// для стартовой вершины предшественник не определён
-            cameFromMove[start] = null; // для стартовой вершины предшественник не определён
-            costSoFar[start] = 0; //перемещение в начальную точку = 0
-
-            /*Есть ли ещё клетки до которых я могу дойти или клетки или которые находятся в зоне атаки?
-                           Да: Находится ли на клетке персонаж?
-                              Да: Находится ли клетка в зоне атаки от текущей (путем проверки предыдущих клеток) и может ли персонаж атаковать    
-                                Да:Персонаж враг?
-                                   Да: добавляю к персонажам для атаки
-                                    если разрешена атака сквозь персонажей, то добавляю клетку к пути атаки
-                                  Нет: добавляю к клеткам в зоне атаки
-                              Нет: Могу ли дойти до клетки?
-                                  Да: добавляю к клеткам, в которые могу зайти
-                Нет: конец*/
-            while (frontier.Count > 0)
-            {
-                ACell current = frontier.Dequeue();
-
-                foreach (ACell next in GetNeighbors(current, true))
-                {
-                    bool isCellInAttackRange = false/* BuildPath() <= character.AttackRange.CurrentValue*/;
-                    if (!character.IsAttackedOnMove && character.CanAttack && isCellInAttackRange)
-                    {
-                        bool isCharacterOnCell = next.OccupierType.IsAssignableFrom(typeof(PlayableCharacter));
-                        if (isCharacterOnCell)
-                        {
-                            cellsForAttack.Add(next);
-                            if (ignoreCharactersForAttack)
-                            {
-
-                            }
-                        }
-                        else
-                        {
-
-                        }
-                    }
-                    else if (!next.IsOccupied)
-                    {
-                        int newCost = costSoFar[current] + GetMoveCostToCellForCharacter(next, character);
-                        if (newCost <= character.Speed.CurrentValue && newCost <= remainingActionPoints && !costSoFar.ContainsKey(next) || newCost < costSoFar[next])
-                        {
-                            costSoFar[next] = newCost;
-                            int priority = newCost;
-                            frontier.Enqueue(next, priority);
-                            cameFromMove[next] = current;
-
-                            cellsForMove.Add(next);
-                        }
-                    }
-                }
-            }
-
-            return new(cellsForMove, cellsForAttack);
         }
 
         /// <summary>
@@ -190,19 +229,79 @@ namespace DOTE.Gameplay.Domain.Field
         }
 
         /// <summary>
-        /// Функция, показывающая, насколько мы близки к цели с учётом минимальной стоимости перемещения
+        /// Выполняет проверку может ли производиться атака с заданной позиции
         /// </summary>
-        /// <param name="a">Цель</param>
-        /// <param name="b">Текущая позиция</param>
-        /// <param name="minStepCost">минимальная стоимостб перемещения на клетку</param>
-        private int Heuristic(Hex a, Hex b, int minStepCost)
+        private bool CanAttackFromCell(ACell fromCell, ACell cellWithEnemy, PlayableCharacter character)
         {
-            int steps = a.Distance(b);
-            return steps * minStepCost;
+            bool canAttackFromCell = false;
+            if (fromCell.Hex.Distance(cellWithEnemy.Hex) <= character.AttackRange.CurrentValue)
+            {
+                if (IsLineClear(fromCell, cellWithEnemy, character))
+                {
+                    canAttackFromCell = true;
+                }
+            }
+            return canAttackFromCell;
         }
 
+        /// <summary>
+        /// Проверяет, свободна ли линия атаки между двумя клетками для указанного юнита.
+        /// </summary>
+        private bool IsLineClear(ACell from, ACell target, PlayableCharacter character)
+        {
+            if (from == target) return true;
 
-        private List<ACell> GetNeighbors(ACell cell, bool ignoreCharacters = false)
+            // Получаем промежуточные клетки
+            List<ACell> cellsOnLine = GetCellsLine(from, target); // включает from и target, но будем проверять только промежуточные
+
+            foreach (ACell cellOnLine in cellsOnLine)
+            {
+                if (cellOnLine == from || cellOnLine == target) continue;
+
+                if (!CanAttackTroughtCell(cellOnLine, character))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool CanAttackTroughtCell(ACell cell, PlayableCharacter character)
+        {
+            Class characterClass = character.CharacterInformation.GetCharacterClass();
+            bool canAttackTroughtCharacters = characterClass == Class.Magician || characterClass == Class.Archer;
+
+            if (cell.OccupierOwnerId == character.OwnerId)
+            {
+                return true;
+            }
+            if (cell.OccupierType.IsAssignableFrom(typeof(AObstacle)))
+            {
+                return false;
+            }
+            if (cell.OccupierType.IsAssignableFrom(typeof(PlayableCharacter)) && !canAttackTroughtCharacters)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private List<ACell> GetCellsLine(ACell from, ACell target)
+        {
+            List<Hex> cellsOnLine = FractionalHex.HexLinedraw(from.Hex, target.Hex);
+            List<ACell> result = new();
+
+            foreach (var cellOnLine in cellsOnLine)
+            {
+                if (cellsMap.TryGetValue(cellOnLine, out ACell neighbor))
+                {
+                    result.Add(neighbor);
+                }
+            }
+
+            return result;
+        }
+        private List<ACell> GetNeighbors(ACell cell)
         {
             List<ACell> neighbors = new();
             List<Hex> hexNeighbors = cell.Hex.Neighbors();
@@ -215,20 +314,27 @@ namespace DOTE.Gameplay.Domain.Field
                     {
                         neighbors.Add(neighbor);
                     }
-                    else if (neighbor.OccupierType.IsAssignableFrom(typeof(PlayableCharacter)) && ignoreCharacters)
-                    {
-                        neighbors.Add(neighbor);
-                    }
                 }
             }
 
             return neighbors;
         }
 
+        /// <summary>
+        /// Функция, показывающая, насколько мы близки к цели с учётом минимальной стоимости перемещения
+        /// </summary>
+        /// <param name="a">Цель</param>
+        /// <param name="b">Текущая позиция</param>
+        /// <param name="minStepCost">минимальная стоимостб перемещения на клетку</param>
+        private int Heuristic(Hex a, Hex b, int minStepCost)
+        {
+            int steps = a.Distance(b);
+            return steps * minStepCost;
+        }
+
         private int GetMoveCostToCellForCharacter(ACell to, PlayableCharacter character)
         {
             return character.GetCellMoveCostByCellType(to.GetType());
         }
-
     }
 }

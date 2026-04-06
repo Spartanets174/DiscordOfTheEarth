@@ -52,7 +52,6 @@ namespace DOTE.Gameplay.Domain.Character
 
         private ACharacterActiveAbility currentUsingAbility;
 
-
         private bool ignorePysicalDamage;
         private bool ignoreMagicalDamage;
 

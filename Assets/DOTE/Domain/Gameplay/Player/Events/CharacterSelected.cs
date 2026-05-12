@@ -1,6 +1,6 @@
 ﻿using DOTE.SharedKernel.Domain;
 
-namespace DOTE.Gameplay.Domain.GameParty
+namespace DOTE.Gameplay.Domain.Player
 {
     public class CharacterSelected: IDomainEvent
     {

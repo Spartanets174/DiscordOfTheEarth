@@ -3,6 +3,7 @@ using DOTE.SharedKernel.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Zenject;
 using Random = UnityEngine.Random;
@@ -36,7 +37,7 @@ namespace DOTE.Gameplay.Domain.Character
         public IntCharacterCharacteristic UseAbilityCost { get; private set; }
         public IntCharacterCharacteristic AttackCost { get; private set; }
 
-        public bool IsCharacterDied;
+        public bool IsCharacterDead { get; private set; }
         public bool CanUseAbilities { get; private set; }
         public bool CanAttack { get; private set; }
         public bool CanBeDamaged { get; private set; }
@@ -159,15 +160,21 @@ namespace DOTE.Gameplay.Domain.Character
 
         public void Attack(PlayableCharacter target)
         {
-            if (CanAttack && !IsAttackedOnMove)
+            if (CanAttack && !IsAttackedOnMove && !IsCharacterDead)
             {
                 target.TakeDamage(this);
                 IsAttackedOnMove = true;
+                eventBus.Publish(new CharacterAttacked(CharacterId, target.CharacterId, AttackCost.CurrentValue));
             }
         }
 
         public void TakeDamage(float damage, ACharacterActiveAbility characterActiveAbility)
         {
+            if (IsCharacterDead)
+            {
+                return;
+            }
+
             float finalPhysicalDamage = CalculateFinalDamageByFormula(damage, PhysicalDefence.CurrentValue) * PhysicalDamageMultiplier.CurrentValue;
             float finalMagicalDamage = CalculateFinalDamageByFormula(damage, MagicalDefence.CurrentValue) * MagicalDamageMultiplier.CurrentValue;
             float finalDamage = Mathf.Max(finalPhysicalDamage, finalMagicalDamage) * CalculateCriticalDamageMultiplier(characterActiveAbility.AbilityOwner);
@@ -182,6 +189,11 @@ namespace DOTE.Gameplay.Domain.Character
 
         public void TakeDamage(PlayableCharacter attacker)
         {
+            if (IsCharacterDead)
+            {
+                return;
+            }
+
             if (blockDamageFromClassMap[attacker.CharacterInformation.GetCharacterClass()])
             {
                 eventBus.Publish(new CharacterDamaged(CharacterId, attacker.CharacterInformation.GetCharacterName(), 0));
@@ -196,6 +208,11 @@ namespace DOTE.Gameplay.Domain.Character
 
         public void TakeDamage(float damage, string attackerName)
         {
+            if (IsCharacterDead)
+            {
+                return;
+            }
+
             if (!CanBeDamaged || IsDamageAvoided())
             {
                 eventBus.Publish(new CharacterDamaged(CharacterId, attackerName, 0));
@@ -208,9 +225,9 @@ namespace DOTE.Gameplay.Domain.Character
 
         private void TryDeath()
         {
-            if (Health.CurrentValue <= 0 && !IsCharacterDied)
+            if (Health.CurrentValue <= 0 && !IsCharacterDead)
             {
-                IsCharacterDied = true;
+                IsCharacterDead = false;
                 passiveAbility.StopAbility();
                 eventBus.Publish(new CharacterDied(CharacterId));
             }
@@ -218,30 +235,45 @@ namespace DOTE.Gameplay.Domain.Character
 
         public void Heal(float amount, bool ignoreMax)
         {
+            if (IsCharacterDead)
+            {
+                return;
+            }
+
             Health.IncreaseCurrentValue(amount, ignoreMax);
             eventBus.Publish(new CharacterHealed(CharacterId, amount));
         }
 
         public void Move(Hex position, int moveCost)
         {
-            if (moveCost > Speed.CurrentValue)
+            if (moveCost > Speed.CurrentValue || IsCharacterDead)
             {
                 return;
             }
+
             Hex oldPosition = PositionOnField;
             Speed.DecreaseCurrentValue(moveCost);
             PositionOnField = position;
-            eventBus.Publish(new CharacterMoved(CharacterId, oldPosition, PositionOnField));
+            eventBus.Publish(new CharacterMoved(CharacterId, oldPosition, PositionOnField, moveCost));
         }
 
         public void ResetCharacter()
         {
+            if (IsCharacterDead)
+            {
+                return;
+            }
             Speed.ToStartValueIfLower();
             IsAttackedOnMove = false;
         }
 
         public void RemoveDebuffs()
         {
+            if (IsCharacterDead)
+            {
+                return;
+            }
+
             Speed.SetCanChangeValue(true);
             SetCanAttack(true);
             CanUseAbilities = true;
@@ -263,7 +295,7 @@ namespace DOTE.Gameplay.Domain.Character
 
         public void UseAbility(ActiveAbilityType activeAbilityType)
         {
-            if (!CanUseAbilities)
+            if (!CanUseAbilities || IsCharacterDead)
             {
                 return;
             }
@@ -299,12 +331,20 @@ namespace DOTE.Gameplay.Domain.Character
 
         public void EquipItem(string itemId)
         {
+            if (IsCharacterDead)
+            {
+                return;
+            }
             equipedItemsIds.Add(itemId);
             eventBus.Publish(new CharacterItemEquiped(CharacterId, itemId));
         }
 
         public void RemoveItem(string itemId)
         {
+            if (IsCharacterDead)
+            {
+                return;
+            }
             equipedItemsIds.Add(itemId);
             eventBus.Publish(new CharacterItemRemoved(CharacterId, itemId));
         }
@@ -429,7 +469,6 @@ namespace DOTE.Gameplay.Domain.Character
             currentUsingAbility.OnAbilityUsed -= OnCharacterAbilityUsed;
             eventBus.Publish(new CharacterActiveAbilityUsed(CharacterId, attackAbility.ActiveAbilityType));
         }
-
         private bool IsDamageAvoided()
         {
             float chance = Random.Range(0f, 1f);

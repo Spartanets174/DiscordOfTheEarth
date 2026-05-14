@@ -4,14 +4,14 @@ using DOTE.SharedKernel.Domain;
 
 namespace DOTE.Gameplay.Domain.GameParty
 {
-    public class GamePartyDomainService
+    public class GamePartyStatesDispatcher
     {
         private ICharacterRepository characterRepository;
         private IPlayerRepository playerRepository;
         private IGameParty currentGameParty;
         private IDomainEventBus eventBus;
 
-        public GamePartyDomainService(IGameParty currentGameParty, IDomainEventBus eventBus, IPlayerRepository playerRepository, ICharacterRepository characterRepository)
+        public GamePartyStatesDispatcher(IGameParty currentGameParty, IDomainEventBus eventBus, IPlayerRepository playerRepository, ICharacterRepository characterRepository)
         {
             this.currentGameParty = currentGameParty;
             this.eventBus = eventBus;
@@ -26,9 +26,7 @@ namespace DOTE.Gameplay.Domain.GameParty
             this.eventBus.Subscribe<CharacterActiveAbilityUsed>(OnActiveAbilityUsed);
         }
 
-
-
-        ~GamePartyDomainService()
+        ~GamePartyStatesDispatcher()
         {
             eventBus.Unsubscribe<PointsOfActionValueChanged>(OnPlayerTurnPOAChanged);
             eventBus.Unsubscribe<PlayerAliveCharactersCountChanged>(OnPlayerAliveCharactersCountChanged);

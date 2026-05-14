@@ -64,6 +64,7 @@ namespace DOTE.Gameplay.Domain.GameParty
             if (currentGameParty.CurrentState is PlayerTurnState playerTurnState)
             {
                 GamePartyPlayer player = playerRepository.GetPlayerById(playerTurnState.PlayerId);
+
                 if (player == null)
                 {
                     return;

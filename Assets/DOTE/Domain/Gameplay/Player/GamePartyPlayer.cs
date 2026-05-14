@@ -37,7 +37,7 @@ namespace DOTE.Gameplay.Domain.Player
 
         public void SelectCharacter(string characterId)
         {
-            if (IsCharacterAlive(characterId) && !selectedCharacterIds.Contains(characterId))
+            if (IsCharacterAlive(characterId))
             {
                 selectedCharacterIds.Add(characterId);
                 domainEventBus.Publish(new CharacterSelected(PlayerId, characterId));
@@ -46,14 +46,13 @@ namespace DOTE.Gameplay.Domain.Player
 
         public void DeselectCharacter(string characterId)
         {
-            if (IsCharacterAlive(characterId) && selectedCharacterIds.Contains(characterId))
+            if (selectedCharacterIds.Remove(characterId))
             {
-                selectedCharacterIds.Remove(characterId);
                 domainEventBus.Publish(new CharacterDeselected(PlayerId, characterId));
             }
         }
 
-        public void MoveSelectedCharacter(PlayableCharacter playableCharacter, Hex targetCell, int moveCost)
+        public void MoveCharacter(PlayableCharacter playableCharacter, Hex targetCell, int moveCost)
         {
             if (IsCharacterAlive(playableCharacter.CharacterId) && CanManipulateCharacter(playableCharacter.CharacterId))
             {
@@ -61,7 +60,7 @@ namespace DOTE.Gameplay.Domain.Player
             }
         }
 
-        public void AttackTargetBySelectedCharacter(PlayableCharacter attacker, PlayableCharacter target)
+        public void AttackCharacter(PlayableCharacter attacker, PlayableCharacter target)
         {
             if (IsCharacterAlive(attacker.CharacterId) && CanManipulateCharacter(attacker.CharacterId))
             {
@@ -69,7 +68,7 @@ namespace DOTE.Gameplay.Domain.Player
             }
         }
 
-        public void UseSelectedCharacterAbility(PlayableCharacter character, ActiveAbilityType abilityType)
+        public void UseCharacterAbility(PlayableCharacter character, ActiveAbilityType abilityType)
         {
             if (IsCharacterAlive(character.CharacterId) && CanManipulateCharacter(character.CharacterId))
             {
@@ -123,18 +122,24 @@ namespace DOTE.Gameplay.Domain.Player
             return characterAliveMap.Values.Count(x => x);
         }
 
+        public List<string> GetSelectedCharacterIds()
+        {
+            return new(selectedCharacterIds);
+        }
+
         public bool HasCharacter(string characterId)
         {
             return characterAliveMap.Keys.Contains(characterId);
         }
-        private bool IsCharacterAlive(string characterId)
+
+        public bool IsCharacterAlive(string characterId)
         {
             bool alive = false;
             characterAliveMap.TryGetValue(characterId, out alive);
             return alive;
         }
 
-        private bool CanManipulateCharacter(string CharacterId)
+        public bool CanManipulateCharacter(string CharacterId)
         {
             return selectedCharacterIds.Contains(CharacterId) && selectedCharacterIds.Count == 1;
         }

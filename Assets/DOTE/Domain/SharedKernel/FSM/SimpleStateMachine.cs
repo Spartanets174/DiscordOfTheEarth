@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DOTE.SharedKernel.Domain
 {
-    public class AStateMachine
+    public class SimpleStateMachine
     {
         public IState state { get; protected set; }
         public List<IState> states { get; protected set; } = new List<IState>();
@@ -31,7 +31,7 @@ namespace DOTE.SharedKernel.Domain
 
         public void SetState(IState state)
         {
-            if (state == null)
+            if (!states.Contains(state))
             {
                 return;
             }

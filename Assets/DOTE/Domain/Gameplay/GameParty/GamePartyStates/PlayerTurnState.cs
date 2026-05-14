@@ -1,3 +1,4 @@
+using DOTE.Gameplay.Domain.Character;
 using DOTE.Gameplay.Domain.Field;
 using DOTE.Gameplay.Domain.Player;
 using DOTE.SharedKernel.Domain;
@@ -11,8 +12,12 @@ namespace DOTE.Gameplay.Domain.GameParty
         public int PointsOfAction { get; private set; }
         public string PlayerId { get; private set; }
 
+        public PlayerTurnState CurrentState => ssm.state as PlayerTurnState;
+
+        private SimpleStateMachine ssm;
         private int defaultPointsOfActionValue;
 
+        public event Action<PlayerTurnState> OnPlayerTurnStateChanged;
         public event Action<PlayerTurnState> OnPOAChanged;
 
         public PlayerTurnState(string name, string playerId, int defaultPointsOfActionValue)
@@ -20,13 +25,53 @@ namespace DOTE.Gameplay.Domain.GameParty
             Name = name;
             PlayerId = playerId;
             this.defaultPointsOfActionValue = defaultPointsOfActionValue;
+            ssm = new();
+
+            PlayerTurnDefaultState playerTurnDefaultState = new();
+
+            ssm.AddState(playerTurnDefaultState);
+            ssm.OnStateChanged += PlayerTurnStateChanged;
         }
 
-        public override void MoveSelectedCharacter(GamePartyPlayer player, Hex targetCell, int moveCost)
+        ~PlayerTurnState()
         {
-            base.MoveSelectedCharacter(player, targetCell, moveCost);
+            ssm.OnStateChanged -= PlayerTurnStateChanged;
+        }
 
-            if (!CanCharacterDoAction(player))
+        protected override void OnEnterHook()
+        {
+            base.OnEnterHook();
+            ResetPointsOfAction();
+        }
+
+        public void SetPlayerTurnState(Type type)
+        {
+            ssm.SetState(type);
+        }
+
+        public override void SelectCharacter(GamePartyPlayer player, PlayableCharacter character)
+        {
+            if (!CanPlayerDoAction(player))
+            {
+                return;
+            }
+
+            CurrentState.SelectCharacter(player, character);
+        }
+
+        public override void DeselectCharacter(GamePartyPlayer player, PlayableCharacter character)
+        {
+            if (!CanPlayerDoAction(player))
+            {
+                return;
+            }
+
+            CurrentState.DeselectCharacter(player, character);
+        }
+
+        public override void MoveCharacter(GamePartyPlayer player, PlayableCharacter character, Hex targetCell, int moveCost)
+        {
+            if (!CanPlayerDoAction(player))
             {
                 return;
             }
@@ -36,34 +81,32 @@ namespace DOTE.Gameplay.Domain.GameParty
                 return;
             }
 
-            //player.MoveSelectedCharacter();
+            CurrentState.MoveCharacter(player, character, targetCell, moveCost);
         }
 
-        public override void AttackTargetBySelectedCharacter(GamePartyPlayer player, string targetID)
+        public override void AttackCharacter(GamePartyPlayer player, PlayableCharacter attacker, PlayableCharacter target)
         {
-            base.AttackTargetBySelectedCharacter(player, targetID);
-
-            if (!CanCharacterDoAction(player))
+            if (!CanPlayerDoAction(player))
             {
                 return;
             }
 
-            /*if (attacker.AttackCost.CurrentValue > PointsOfAction)
+            if (attacker.AttackCost.CurrentValue > PointsOfAction)
             {
                 return;
-            }*/
+            }
 
-            //player.AttackTargetBySelectedCharacter();
+            CurrentState.AttackCharacter(player, attacker, target);
         }
 
-        public override void UseSelectedCharacterAbility(GamePartyPlayer player, ActiveAbilityType abilityType)
+        public override void UseCharacterAbility(GamePartyPlayer player, PlayableCharacter character, ActiveAbilityType abilityType)
         {
-            base.UseSelectedCharacterAbility(player, abilityType);
-
-            /*if (character.UseAbilityCost.CurrentValue > PointsOfAction)
+            if (character.UseAbilityCost.CurrentValue > PointsOfAction)
             {
                 return;
-            }*/
+            }
+
+            CurrentState.UseCharacterAbility(player, character, abilityType);
         }
 
         public void ResetPointsOfAction()
@@ -76,6 +119,11 @@ namespace DOTE.Gameplay.Domain.GameParty
             SetPOA(PointsOfAction - value);
         }
 
+        private void PlayerTurnStateChanged()
+        {
+            OnPlayerTurnStateChanged?.Invoke(this);
+        }
+
         private void SetPOA(int value)
         {
             if (value >= 0 && PointsOfAction != value)
@@ -85,7 +133,7 @@ namespace DOTE.Gameplay.Domain.GameParty
             }
         }
 
-        private bool CanCharacterDoAction(GamePartyPlayer player)
+        private bool CanPlayerDoAction(GamePartyPlayer player)
         {
             return player.PlayerId == PlayerId;
         }

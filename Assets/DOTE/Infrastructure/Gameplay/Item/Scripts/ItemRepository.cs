@@ -5,14 +5,14 @@ namespace DOTE.Gameplay.Infrastructure.Item
 {
     public class ItemRepository : IItemRepository
     {
-        private Dictionary<string, AItem> itemsMap;
+        private Dictionary<string, IItem> itemsMap;
 
         public ItemRepository()
         {
             itemsMap = new();
         }
 
-        public void AddItem(AItem item)
+        public void AddItem(IItem item)
         {
             if (!itemsMap.ContainsKey(item.ItemId))
             {
@@ -28,9 +28,9 @@ namespace DOTE.Gameplay.Infrastructure.Item
             }
         }
 
-        public AItem GetItemById(string characterId)
+        public IItem GetItemById(string characterId)
         {
-            itemsMap.TryGetValue(characterId, out AItem item);
+            itemsMap.TryGetValue(characterId, out IItem item);
             return item;
         }
     }

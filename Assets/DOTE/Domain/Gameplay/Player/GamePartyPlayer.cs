@@ -84,7 +84,7 @@ namespace DOTE.Gameplay.Domain.Player
             }
         }
 
-        public void CollectItem(AItem item)
+        public void CollectItem(IItem item)
         {
             if (!collectedItemIds.Contains(item.ItemId))
             {

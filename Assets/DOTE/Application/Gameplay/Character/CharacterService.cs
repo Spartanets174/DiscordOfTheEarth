@@ -67,14 +67,14 @@ namespace DOTE.Gameplay.Application.Character
         {
             PlayableCharacter character = characterRepository.GetCharacterById(characterId);
 
-            character.EquipItem(itemId);
+            character.AddEquipedItem(itemId);
         }
 
         public void RemoveItem(string characterId, string itemId)
         {
             PlayableCharacter character = characterRepository.GetCharacterById(characterId);
 
-            character.RemoveItem(itemId);
+            character.RemoveEquipedItem(itemId);
         }
     }
 }

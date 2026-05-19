@@ -26,30 +26,30 @@ namespace DOTE.Gameplay.Application.Item
 
         private void Subscribe()
         {
-            domainEventBus.Subscribe<CharacterItemEquiped>(ApplyItemEffect);
-            domainEventBus.Subscribe<CharacterItemRemoved>(RemoveItemEffect);
+            domainEventBus.Subscribe<ItemEquiped>(ApplyItemEffect);
+            domainEventBus.Subscribe<ItemRemoved>(RemoveItemEffect);
         }
 
         private void Unsubscribe()
         {
-            domainEventBus.Unsubscribe<CharacterItemEquiped>(ApplyItemEffect);
-            domainEventBus.Unsubscribe<CharacterItemRemoved>(RemoveItemEffect);
+            domainEventBus.Unsubscribe<ItemEquiped>(ApplyItemEffect);
+            domainEventBus.Unsubscribe<ItemRemoved>(RemoveItemEffect);
         }
 
-        private void ApplyItemEffect(CharacterItemEquiped equiped)
+        private void ApplyItemEffect(ItemEquiped equiped)
         {
             PlayableCharacter character = characterRepository.GetCharacterById(equiped.CharacterId);
-            AItem item = itemRepository.GetItemById(equiped.ItemId);
+            IItem item = itemRepository.GetItemById(equiped.ItemId);
 
-            item.ApplyEffect(character);
+            //item.Equip(character);
         }
 
-        private void RemoveItemEffect(CharacterItemRemoved removed)
+        private void RemoveItemEffect(ItemRemoved removed)
         {
             PlayableCharacter character = characterRepository.GetCharacterById(removed.CharacterId);
-            AItem item = itemRepository.GetItemById(removed.ItemId);
+            IItem item = itemRepository.GetItemById(removed.ItemId);
 
-            item.RemoveEffect(character);
+            item.Remove(character);
         }
     }
 }

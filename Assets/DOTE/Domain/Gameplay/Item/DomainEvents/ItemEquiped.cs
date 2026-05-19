@@ -2,12 +2,12 @@
 
 namespace DOTE.Gameplay.Domain.Character
 {
-    public class CharacterItemRemoved : IDomainEvent
+    public class ItemEquiped : IDomainEvent
     {
         public string ItemId { get; private set; }
         public string CharacterId { get; private set; }
 
-        public CharacterItemRemoved(string itemId, string characterId)
+        public ItemEquiped(string itemId, string characterId)
         {
             ItemId = itemId;
             CharacterId = characterId;

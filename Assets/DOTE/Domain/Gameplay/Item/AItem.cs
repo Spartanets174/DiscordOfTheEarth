@@ -1,25 +1,51 @@
+using DOTE.Gameplay.Domain.Character;
 using DOTE.SharedKernel.Domain;
+using Zenject;
 
 namespace DOTE.Gameplay.Domain.Item
 {
-    public abstract class AItem
+    public abstract class AItem<T> : IItem where T : IItemEffectContext
     {
         public string ItemId { get; private set; }
+        public string CharacterId { get; private set; }
+        public ItemInformation ItemInformation { get; private set; }
 
+        [Inject]
         private IDomainEventBus eventBus;
-
-        public void ApplyEffect(Character.PlayableCharacter character)
+        protected AItem(string itemId, ItemInformation itemInformation)
         {
-            EquipHook(character);
-            //eventBus.Publish(new ItemEquiped(ItemId, character.CharacterId)); хз нужен ли евент на применение эффекта
+            ItemId = itemId;
+            ItemInformation = itemInformation;
         }
-        public void RemoveEffect(Character.PlayableCharacter character)
+
+        public void Equip(IItemEffectContext context, PlayableCharacter character)
         {
+            if (!IsItemFree())
+            {
+                return;
+            }
+
+            CharacterId = character.CharacterId;
+            EquipHook((T)context, character);
+            eventBus.Publish(new ItemEquiped(ItemId, CharacterId));
+        }
+        public void Remove(PlayableCharacter character)
+        {
+            if (character.CharacterId != CharacterId)
+            {
+                return;
+            }
+
             RemoveHook(character);
-            //eventBus.Publish(new ItemRemoved(ItemId, character.CharacterId)); хз нужен ли евент на удаление эффекта
+            eventBus.Publish(new ItemRemoved(ItemId, CharacterId));
         }
 
-        protected abstract void EquipHook(Character.PlayableCharacter character);
-        protected abstract void RemoveHook(Character.PlayableCharacter character);
+        public bool IsItemFree()
+        {
+            return string.IsNullOrEmpty(CharacterId);
+        }
+
+        protected abstract void EquipHook(T context, PlayableCharacter character);
+        protected abstract void RemoveHook(PlayableCharacter character);
     }
 }

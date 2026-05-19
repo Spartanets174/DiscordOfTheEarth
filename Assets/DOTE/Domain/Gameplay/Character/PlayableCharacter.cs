@@ -328,24 +328,24 @@ namespace DOTE.Gameplay.Domain.Character
             passiveAbility.RunAbility();
         }
 
-        public void EquipItem(string itemId)
+        public void AddEquipedItem(string itemId)
         {
-            if (IsCharacterDead)
+            if (IsCharacterDead || equipedItemsIds.Contains(itemId))
             {
                 return;
             }
+
             equipedItemsIds.Add(itemId);
-            eventBus.Publish(new CharacterItemEquiped(CharacterId, itemId));
         }
 
-        public void RemoveItem(string itemId)
+        public void RemoveEquipedItem(string itemId)
         {
             if (IsCharacterDead)
             {
                 return;
             }
-            equipedItemsIds.Add(itemId);
-            eventBus.Publish(new CharacterItemRemoved(CharacterId, itemId));
+
+            equipedItemsIds.Remove(itemId);
         }
 
         public void SetCanAttack(bool value) => CanAttack = value;

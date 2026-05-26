@@ -1,6 +1,7 @@
 ﻿using DOTE.SharedKernel.Domain;
 using System;
 using Zenject;
+using static UnityEngine.Random;
 
 namespace DOTE.Gameplay.Domain.GameParty
 {
@@ -39,6 +40,8 @@ namespace DOTE.Gameplay.Domain.GameParty
 
             firstPlayerState.OnPlayerTurnStateChanged += OnPlayerTurnStateChanged;
             secondPlayerState.OnPlayerTurnStateChanged += OnPlayerTurnStateChanged;
+
+            startGameState.OnStartGameStateChanged += OnStartGameStateChanged;
         }
 
         ~SinglePlayerGameParty()
@@ -48,6 +51,8 @@ namespace DOTE.Gameplay.Domain.GameParty
 
             firstPlayerState.OnPlayerTurnStateChanged -= OnPlayerTurnStateChanged;
             secondPlayerState.OnPlayerTurnStateChanged -= OnPlayerTurnStateChanged;
+
+            startGameState.OnStartGameStateChanged -= OnStartGameStateChanged;
         }
 
         public void SetStartGameState()
@@ -118,6 +123,11 @@ namespace DOTE.Gameplay.Domain.GameParty
         private void OnPlayerTurnStateChanged(PlayerTurnState state)
         {
             domainEventBus.Publish(new PlayerTurnStateChanged(state.CurrentState.GetType()));
+        }
+
+        private void OnStartGameStateChanged()
+        {
+            domainEventBus.Publish(new StartGameStateChanged(startGameState.CurrentState.GetType()));
         }
     }
 }

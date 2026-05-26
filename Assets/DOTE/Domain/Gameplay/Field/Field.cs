@@ -1,5 +1,6 @@
 using DOTE.Gameplay.Domain.Character;
 using DOTE.SharedKernel.Domain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -26,16 +27,25 @@ namespace DOTE.Gameplay.Domain.Field
             }
         }
 
-        public ACell GetCell(Hex cell)
+        public void PlaceOnCell(Hex hex, Type occupierType, string occupierOwnerGuid)
         {
-            ACell targetCell = null;
-            cellsMap.TryGetValue(cell, out targetCell);
-            return targetCell;
+            if (cellsMap.TryGetValue(hex , out ACell cell))
+            {
+                cell.Place(occupierType, occupierOwnerGuid);
+            }
         }
 
-        public List<ACell> GetCellsInRange(Hex centerCordinate, int x, int y)
+        public void FreeCell(Hex hex)
         {
-            List<ACell> result = new();
+            if (cellsMap.TryGetValue(hex, out ACell cell))
+            {
+                cell.Free();
+            }
+        }
+
+        public List<Hex> GetCellsInRange(Hex centerCordinate, int x, int y)
+        {
+            List<Hex> result = new();
 
             if (cellsMap.TryGetValue(centerCordinate, out ACell center))
             {
@@ -53,9 +63,9 @@ namespace DOTE.Gameplay.Domain.Field
                         int s = -q - r;   // Третья координата из условия q+r+s=0
                         Hex hexInRange = new(q, r, s);
 
-                        if (cellsMap.TryGetValue(hexInRange, out ACell targetCell))
+                        if (cellsMap.ContainsKey(hexInRange))
                         {
-                            result.Add(targetCell);
+                            result.Add(hexInRange);
                         }
                     }
                 }

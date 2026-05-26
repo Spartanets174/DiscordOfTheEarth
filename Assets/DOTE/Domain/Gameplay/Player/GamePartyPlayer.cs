@@ -108,7 +108,7 @@ namespace DOTE.Gameplay.Domain.Player
             }
         }
 
-        public void SetCharacterAliveState(string character, bool alive)
+        public void SetCharacterAliveStatus(string character, bool alive)
         {
             if (characterAliveMap.ContainsKey(character))
             {

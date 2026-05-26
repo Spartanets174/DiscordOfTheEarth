@@ -12,7 +12,7 @@ namespace DOTE.Gameplay.Domain.GameParty
         public int PointsOfAction { get; private set; }
         public string PlayerId { get; private set; }
 
-        public PlayerTurnState CurrentState => ssm.state as PlayerTurnState;
+        public APlayerTurnState CurrentState => ssm.state as APlayerTurnState;
 
         private SimpleStateMachine ssm;
         private int defaultPointsOfActionValue;
@@ -28,8 +28,10 @@ namespace DOTE.Gameplay.Domain.GameParty
             ssm = new();
 
             PlayerTurnDefaultState playerTurnDefaultState = new();
+            PlayerTurnPauseState playerTurnPauseState = new();
 
             ssm.AddState(playerTurnDefaultState);
+            ssm.AddState(playerTurnPauseState);
             ssm.OnStateChanged += PlayerTurnStateChanged;
         }
 

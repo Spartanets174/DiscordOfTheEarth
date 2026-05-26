@@ -1,7 +1,7 @@
 using DOTE.Gameplay.Domain.Item;
 using System.Collections.Generic;
 
-namespace DOTE.Gameplay.Infrastructure.Item
+namespace DOTE.Gameplay.Infrastructure
 {
     public class ItemRepository : IItemRepository
     {

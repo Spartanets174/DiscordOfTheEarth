@@ -1,11 +1,12 @@
 using DOTE.Gameplay.Domain.Character;
+using DOTE.Gameplay.Infrastructure.Character;
 using DOTE.SharedKernel.Domain;
 using DOTE.SharedKernel.Infrastructure.Character;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DOTE.Gameplay.Infrastructure.Character
+namespace DOTE.Gameplay.Infrastructure
 {
     [CreateAssetMenu(fileName = "CharacterBuilderSO", menuName = "DOTE/Gameplay/Character/CharacterBuilderSO")]
     public class CharacterBuilderSO : ScriptableObject

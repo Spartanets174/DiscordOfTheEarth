@@ -64,19 +64,20 @@ namespace DOTE.Gameplay.Domain.Field
             return result;
         }
 
-        public int CalculatePathMoveCostForCharacter(List<ACell> path, PlayableCharacter character)
+        public int CalculatePathMoveCostForCharacter(List<Hex> path, PlayableCharacter character)
         {
             int cost = 0;
-            foreach (var cell in path)
+            foreach (var hex in path)
             {
-                cost += GetMoveCostToCellForCharacter(cell, character);
+                cellsMap.TryGetValue(hex, out ACell aCell);
+                cost += GetMoveCostToCellForCharacter(aCell, character);
             }
             return cost;
         }
 
         public List<AttackTargetInfo> GetPossibleCellsWithEnemiesForAttack(PlayableCharacter character, int remainingActionPoints)
         {
-            Dictionary<ACell, int> cellsForMove = GetCellsForMove(character, remainingActionPoints);
+            Dictionary<Hex, int> cellsForMove = GetCellsForMove(character, remainingActionPoints);
             List<AttackTargetInfo> result = new List<AttackTargetInfo>();
             List<ACell> cellsWithEnemies = cellsMap.Values.Where(x => character.IsEnemy(x.OccupierOwnerId)).ToList();
             ACell characterCell = cellsMap[character.PositionOnField];
@@ -94,7 +95,7 @@ namespace DOTE.Gameplay.Domain.Field
                     // Поиск клетки, с которой можно атаковать после перемещения
                     foreach (var cellForMove in cellsForMove)
                     {
-                        ACell cell = cellForMove.Key;
+                        ACell cell = cellsMap[cellForMove.Key];
                         int moveCost = cellForMove.Value;
 
                         // Проверяем, хватит ли ОД на атаку после перемещения
@@ -129,7 +130,7 @@ namespace DOTE.Gameplay.Domain.Field
         /// Выполняет поиск всех доступных клеток для передвижения алгоритмом Дейкстры
         /// </summary>
         /// <returns>Словарь клеток с ценой перемещения на каждую</returns>
-        public Dictionary<ACell, int> GetCellsForMove(PlayableCharacter character, int remainingActionPoints)
+        public Dictionary<Hex, int> GetCellsForMove(PlayableCharacter character, int remainingActionPoints)
         {
             PriorityQueue<ACell> frontier = new PriorityQueue<ACell>();
             Dictionary<ACell, int> costSoFar = new Dictionary<ACell, int>();
@@ -138,7 +139,7 @@ namespace DOTE.Gameplay.Domain.Field
             int maxPossibleCost = Mathf.Min(character.Speed.CurrentValue, remainingActionPoints);
             ACell startCell = cellsMap[character.PositionOnField];
 
-            costSoFar[startCell] = 0;
+            costSoFar.Add(startCell, 0);
             frontier.Enqueue(startCell, 0);
 
             while (frontier.Count > 0)
@@ -151,7 +152,12 @@ namespace DOTE.Gameplay.Domain.Field
 
                     if (newCost > maxPossibleCost) continue;
 
-                    if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
+                    if (!costSoFar.ContainsKey(next))
+                    {
+                        costSoFar.Add(next, newCost);
+                        frontier.Enqueue(next, newCost);
+                    }
+                    else if (newCost < costSoFar[next])
                     {
                         costSoFar[next] = newCost;
                         frontier.Enqueue(next, newCost);
@@ -159,17 +165,23 @@ namespace DOTE.Gameplay.Domain.Field
                 }
             }
 
-            return costSoFar;
+            Dictionary<Hex, int> result = new();
+            foreach (var item in costSoFar)
+            {
+                result.Add(item.Key.Hex, item.Value);
+            }
+            return result;
         }
 
-        public List<ACell> GetMovePath(PlayableCharacter character, ACell goal, int remainingActionPoints)
+        public List<Hex> GetMovePath(PlayableCharacter character, Hex goal, int remainingActionPoints)
         {
-            ACell start = cellsMap[character.PositionOnField];
+            cellsMap.TryGetValue(character.PositionOnField, out ACell start);
+            cellsMap.TryGetValue(goal, out ACell current);
 
             //Словарь, сопоставляющий каждый узел с его предшественником в оптимальном пути.
-            Dictionary<ACell, ACell> cameFrom = FindPathAStarAgorithm(character, start, goal, remainingActionPoints);
+            Dictionary<ACell, ACell> cameFrom = FindPathAStarAgorithm(character, start, current, remainingActionPoints);
 
-            ACell current = goal;
+
             List<ACell> path = new();
 
             //Собираем путь из полученных клеток
@@ -182,7 +194,7 @@ namespace DOTE.Gameplay.Domain.Field
             //Переворачиваем, тк начинали с конца
             path.Reverse();
 
-            return path;
+            return path.Select(x => x.Hex).ToList();
         }
 
         /// <summary>

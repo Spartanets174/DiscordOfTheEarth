@@ -1,7 +1,7 @@
 using DOTE.Gameplay.Domain.SupportCard;
 using System.Collections.Generic;
 
-namespace DOTE.Gameplay.Infrastructure.SupportCard
+namespace DOTE.Gameplay.Infrastructure
 {
     public class SupportCardRepository : ISupportCardRepository
     {

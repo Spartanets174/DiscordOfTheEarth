@@ -76,11 +76,27 @@ namespace DOTE.Gameplay.Domain.Player
             }
         }
 
+        public void CancelUsingCharacterAbility(PlayableCharacter character)
+        {
+            if (characterAliveMap.Keys.Contains(character.CharacterId))
+            {
+                character.CancelUsingCurrentActiveAbility();
+            }
+        }
+
         public void UseSupportCard(ASupportCard supportCard)
         {
             if (supportCardIds.Contains(supportCard.SupportCardId))
             {
                 supportCard.UseSupportCard();
+            }
+        }
+
+        public void CancelUsingSupportCard(ASupportCard supportCard)
+        {
+            if (supportCardIds.Contains(supportCard.SupportCardId))
+            {
+                supportCard.CancelUsingSupportCard();
             }
         }
 

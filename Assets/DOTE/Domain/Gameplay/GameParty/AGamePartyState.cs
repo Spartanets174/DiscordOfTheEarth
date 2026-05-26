@@ -10,9 +10,14 @@ namespace DOTE.Gameplay.Domain.GameParty
     {
         public virtual void SelectCharacter(GamePartyPlayer player, PlayableCharacter character) { }
         public virtual void DeselectCharacter(GamePartyPlayer player, PlayableCharacter character) { }
+
         public virtual void MoveCharacter(GamePartyPlayer player, PlayableCharacter character, Hex targetCell, int MoveCost) { }
         public virtual void AttackCharacter(GamePartyPlayer player, PlayableCharacter attacker, PlayableCharacter target) { }
+
         public virtual void UseCharacterAbility(GamePartyPlayer player, PlayableCharacter character, ActiveAbilityType abilityType) { }
+        public virtual void CancelUsingCharacterAbility(GamePartyPlayer player, PlayableCharacter character) { }
+
         public virtual void UseSupportCard(GamePartyPlayer player, ASupportCard supportCard) { }
+        public virtual void CancelUsingSupportCard(GamePartyPlayer player, ASupportCard supportCard) { }
     }
 }

@@ -27,7 +27,7 @@ namespace DOTE.Gameplay.Domain.Character
 
         public void UseAbility()
         {
-            if (IsUsed)
+            if (IsUsed || IsUsing)
             {
                 return;
             }
@@ -37,7 +37,7 @@ namespace DOTE.Gameplay.Domain.Character
 
         public void CancelUsingAbility()
         {
-            if (IsUsed)
+            if (IsUsed || !IsUsing)
             {
                 return;
             }

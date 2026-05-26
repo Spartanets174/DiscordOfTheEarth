@@ -4,7 +4,7 @@ using DOTE.SharedKernel.Infrastructure.Character;
 using System;
 using UnityEngine;
 
-namespace DOTE.Gameplay.Infrastructure.Character
+namespace DOTE.Gameplay.Infrastructure
 {
     public abstract class CharacterActiveAbilityBuilderSO 
     {

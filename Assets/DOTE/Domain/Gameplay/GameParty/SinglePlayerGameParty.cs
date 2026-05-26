@@ -1,8 +1,4 @@
-﻿using DOTE.Gameplay.Domain.Character;
-using DOTE.Gameplay.Domain.Field;
-using DOTE.Gameplay.Domain.Player;
-using DOTE.Gameplay.Domain.SupportCard;
-using DOTE.SharedKernel.Domain;
+﻿using DOTE.SharedKernel.Domain;
 using System;
 using Zenject;
 
@@ -112,36 +108,6 @@ namespace DOTE.Gameplay.Domain.GameParty
             {
                 playerTurnState.DecreasePointsOfAction(playerTurnState.PointsOfAction - value);
             }
-        }
-
-        public void SelectCharacter(GamePartyPlayer player, PlayableCharacter character)
-        {
-            CurrentState.SelectCharacter(player, character);
-        }
-
-        public void DeselectCharacter(GamePartyPlayer player, PlayableCharacter character)
-        {
-            CurrentState.DeselectCharacter(player, character);
-        }
-
-        public void MoveCharacter(GamePartyPlayer player, PlayableCharacter character, Hex targetCell, int MoveCost)
-        {
-            CurrentState.MoveCharacter(player, character, targetCell, MoveCost);
-        }
-
-        public void AttackCharacter(GamePartyPlayer player, PlayableCharacter attacker, PlayableCharacter target)
-        {
-            CurrentState.AttackCharacter(player, attacker, target);
-        }
-
-        public void UseCharacterAbility(GamePartyPlayer player, PlayableCharacter character, ActiveAbilityType abilityType)
-        {
-            CurrentState.UseCharacterAbility(player, character, abilityType);
-        }
-
-        public void UseSupportCard(GamePartyPlayer player, ASupportCard supportCard)
-        {
-            CurrentState.UseSupportCard(player, supportCard);
         }
 
         private void OnPOAChanged(PlayerTurnState state)

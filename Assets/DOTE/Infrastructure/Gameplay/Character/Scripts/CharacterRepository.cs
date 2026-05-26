@@ -1,7 +1,7 @@
 using DOTE.Gameplay.Domain.Character;
 using System.Collections.Generic;
 
-namespace DOTE.Gameplay.Infrastructure.Character
+namespace DOTE.Gameplay.Infrastructure
 {
     public class CharacterRepository : ICharacterRepository
     {

@@ -1,6 +1,7 @@
 using DOTE.Gameplay.Domain.Character;
 using DOTE.Gameplay.Domain.Field;
 using DOTE.Gameplay.Domain.Player;
+using DOTE.Gameplay.Domain.SupportCard;
 using DOTE.SharedKernel.Domain;
 using System.Collections.Generic;
 
@@ -44,6 +45,21 @@ namespace DOTE.Gameplay.Domain.GameParty
         public override void UseCharacterAbility(GamePartyPlayer player, PlayableCharacter character, ActiveAbilityType abilityType)
         {
             player.UseCharacterAbility(character, abilityType);
+        }
+
+        public override void CancelUsingCharacterAbility(GamePartyPlayer player, PlayableCharacter character)
+        {
+            player.CancelUsingCharacterAbility(character);
+        }
+
+        public override void UseSupportCard(GamePartyPlayer player, ASupportCard supportCard)
+        {
+            player.UseSupportCard(supportCard);
+        }
+
+        public override void CancelUsingSupportCard(GamePartyPlayer player, ASupportCard supportCard)
+        {
+            player.CancelUsingSupportCard(supportCard);
         }
     }
 }

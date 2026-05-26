@@ -21,7 +21,7 @@ namespace DOTE.Gameplay.Domain.SupportCard
 
         public void UseSupportCard()
         {
-            if (IsUsed)
+            if (IsUsed || IsUsing)
             {
                 return;
             }
@@ -33,7 +33,7 @@ namespace DOTE.Gameplay.Domain.SupportCard
 
         public void CancelUsingSupportCard()
         {
-            if (IsUsed)
+            if (IsUsed || !IsUsing)
             {
                 return;
             }

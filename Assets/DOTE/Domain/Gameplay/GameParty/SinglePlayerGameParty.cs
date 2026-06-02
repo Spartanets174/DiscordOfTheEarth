@@ -107,6 +107,23 @@ namespace DOTE.Gameplay.Domain.GameParty
             }
         }
 
+        public void AddTurnEffect(PlayerTurnEffect playerTurnEffect)
+        {
+            if (CurrentState is not PlayerTurnState playerTurnState)
+            {
+                return;
+            }
+
+            if (CurrentState == firstPlayerState)
+            {
+                firstPlayerState.AddTurnEffect(playerTurnEffect);
+            }
+            else
+            {
+                secondPlayerState.AddTurnEffect(playerTurnEffect);
+            }
+        }
+
         public void DecreasePlayerTurnPOI(int value)
         {
             if (CurrentState is PlayerTurnState playerTurnState)

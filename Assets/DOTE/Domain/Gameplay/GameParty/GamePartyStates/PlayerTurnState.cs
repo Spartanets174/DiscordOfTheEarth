@@ -3,6 +3,7 @@ using DOTE.Gameplay.Domain.Field;
 using DOTE.Gameplay.Domain.Player;
 using DOTE.SharedKernel.Domain;
 using System;
+using System.Collections.Generic;
 
 namespace DOTE.Gameplay.Domain.GameParty
 {
@@ -17,6 +18,8 @@ namespace DOTE.Gameplay.Domain.GameParty
         private SimpleStateMachine ssm;
         private int defaultPointsOfActionValue;
 
+        private List<PlayerTurnEffect> playerTurnEffects;
+
         public event Action<PlayerTurnState> OnPlayerTurnStateChanged;
         public event Action<PlayerTurnState> OnPOAChanged;
 
@@ -26,6 +29,7 @@ namespace DOTE.Gameplay.Domain.GameParty
             PlayerId = playerId;
             this.defaultPointsOfActionValue = defaultPointsOfActionValue;
             ssm = new();
+            playerTurnEffects = new();
 
             PlayerTurnDefaultState playerTurnDefaultState = new();
             PlayerTurnPauseState playerTurnPauseState = new();
@@ -44,11 +48,25 @@ namespace DOTE.Gameplay.Domain.GameParty
         {
             base.OnEnterHook();
             ResetPointsOfAction();
+            CheckTurnEffects();
         }
 
         public void SetPlayerTurnState(Type type)
         {
             ssm.SetState(type);
+        }
+
+        public void AddTurnEffect(PlayerTurnEffect turnEffect)
+        {
+            if (!playerTurnEffects.Contains(turnEffect))
+            {
+                if (turnEffect.GetIsBuff())
+                {
+                    turnEffect.DecreaseTurnCount();
+                }
+
+                playerTurnEffects.Add(turnEffect);
+            }
         }
 
         public override void SelectCharacter(GamePartyPlayer player, PlayableCharacter character)
@@ -119,6 +137,23 @@ namespace DOTE.Gameplay.Domain.GameParty
         public void DecreasePointsOfAction(int value)
         {
             SetPOA(PointsOfAction - value);
+        }
+
+        private void CheckTurnEffects()
+        {
+            List<PlayerTurnEffect> temp = new(playerTurnEffects);
+            foreach (var turnCountable in temp)
+            {
+                if (turnCountable.IsCounted())
+                {
+                    turnCountable.Complete();
+                    playerTurnEffects.Remove(turnCountable);
+                }
+                else
+                {
+                    turnCountable.DecreaseTurnCount();
+                }
+            }
         }
 
         private void PlayerTurnStateChanged()

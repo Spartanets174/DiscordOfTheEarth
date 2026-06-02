@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d369a32890607a3439e9de3fd4eb8fe7, type: 3}
+  m_Name: CharacterConfig
+  m_EditorClassIdentifier: 
+  characterInformationConfig: {fileID: 11400000, guid: 6dc48f86127580148ac2d07c8604954c, type: 2}
+  attackAbilityConfig: {fileID: 11400000, guid: 7cc21dc0b65c88c48a8a88d42f62ed27, type: 2}
+  protectiveAbilityConfig: {fileID: 11400000, guid: 7cc21dc0b65c88c48a8a88d42f62ed27, type: 2}
+  enchancingAbilityConfig: {fileID: 11400000, guid: c690b6e8b96c3f6419a09b394aca8fc0, type: 2}
+  passiveAbilityConfig: {fileID: 11400000, guid: 85fd1906e012e3146a3ea303073af439, type: 2}
+  defaultAbilityUsingCost: 11
+  defaultAttackCost: 2

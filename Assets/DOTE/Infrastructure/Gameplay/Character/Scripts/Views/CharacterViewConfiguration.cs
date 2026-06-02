@@ -1,4 +1,3 @@
-using DOTE.SharedKernel.Infrastructure.Character;
 using UnityEngine;
 
 namespace DOTE.Gameplay.Infrastructure.Character

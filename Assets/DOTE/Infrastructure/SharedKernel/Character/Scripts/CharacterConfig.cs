@@ -1,12 +1,14 @@
 using DOTE.SharedKernel.Domain;
 using UnityEngine;
 
-namespace DOTE.SharedKernel.Infrastructure.Character
+namespace DOTE.SharedKernel.Infrastructure
 {
-    [CreateAssetMenu(fileName = "CharacterConfig", menuName = "DOTE/SharedKernel/Character/CharacterConfig")]
-    public class CharacterConfig : ScriptableObject
+    [CreateAssetMenu(fileName = "CharacterInformationConfig", menuName = "DOTE/SharedKernel/Character/CharacterInformationConfig")]
+    public class CharacterInformationConfig : ScriptableObject
     {
         [Header("Infromation")]
+        [SerializeField]
+        private GuidProperty id;
         [SerializeField]
         private string characterName;
         [SerializeField]
@@ -46,6 +48,7 @@ namespace DOTE.SharedKernel.Infrastructure.Character
         [SerializeField]
         private int attackRange;
 
+        public string GetCharacterId() => id.guidString;
         public string GetCharacterName () => characterName;
         public string GetCharacterDescription() => characterDescription; 
         public Race GetCharacterRace() => characterRace; 

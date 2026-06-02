@@ -12,7 +12,7 @@ namespace DOTE.Gameplay.Domain.Character
         public PlayableCharacter AbilityOwner { get; private set; }
 
         public event Action OnAbilityUsed;
-        protected ACharacterActiveAbility(CharacterActiveAbilityInformation abilityInfo, PlayableCharacter abilityOwner)
+        protected ACharacterActiveAbility(CharacterActiveAbilityInformation abilityInfo)
         {
             AbilityInfo = abilityInfo;
         }
@@ -53,6 +53,6 @@ namespace DOTE.Gameplay.Domain.Character
         }
 
         protected abstract void UseAbilityHook();
-        protected abstract void CancelUsingAbilityHook();
+        protected virtual void CancelUsingAbilityHook() { }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using DOTE.SharedKernel.Domain;
 using System;
 using Zenject;
-using static UnityEngine.Random;
 
 namespace DOTE.Gameplay.Domain.GameParty
 {

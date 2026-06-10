@@ -1,4 +1,5 @@
 using DOTE.SharedKernel.Domain;
+using Zenject;
 
 namespace DOTE.Gameplay.Domain.SupportCard
 {
@@ -10,13 +11,13 @@ namespace DOTE.Gameplay.Domain.SupportCard
         public bool IsUsed { get; private set; }
         public bool IsUsing { get; private set; }
 
+        [Inject]
         private IDomainEventBus domainEventBus;
 
-        protected ASupportCard(string supportCardId, SupportCardInformation supportCardInformation, IDomainEventBus domainEventBus)
+        protected ASupportCard(string supportCardId, SupportCardInformation supportCardInformation)
         {
             SupportCardId = supportCardId;
             SupportCardInformation = supportCardInformation;
-            this.domainEventBus = domainEventBus;
         }
 
         public void UseSupportCard()

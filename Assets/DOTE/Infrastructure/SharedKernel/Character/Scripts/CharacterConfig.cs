@@ -24,6 +24,9 @@ namespace DOTE.SharedKernel.Infrastructure
         [SerializeField]
         private int characterPrice;
 
+        [SerializeField]
+        private Sprite characterImage;
+
         [Header("Characteristics")]
         [SerializeField]
         private float health;
@@ -54,7 +57,8 @@ namespace DOTE.SharedKernel.Infrastructure
         public Race GetCharacterRace() => characterRace; 
         public Class GetCharacterClass() => characterClass; 
         public Rarity GetCharacterRarity() => characterRarity; 
-        public int GetCharacterPrice() => characterPrice; 
+        public int GetCharacterPrice() => characterPrice;
+        public Sprite GetCharacterImage() => characterImage;
         public float GetHealth() => health; 
         public int GetSpeed() => speed;  
         public float GetPhysicalAttack() => physicalAttack; 

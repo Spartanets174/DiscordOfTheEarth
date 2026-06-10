@@ -12,6 +12,7 @@ namespace DOTE.Gameplay.Domain.Player
     public class GamePartyPlayer
     {
         public string PlayerId { get; private set; }
+        public string PlayerName { get; private set; }
 
         [Inject]
         private IDomainEventBus domainEventBus;
@@ -22,9 +23,10 @@ namespace DOTE.Gameplay.Domain.Player
 
         private Dictionary<string, bool> characterAliveMap;
 
-        public GamePartyPlayer(string playerId, List<string> characterIds, List<string> supportCardIds)
+        public GamePartyPlayer(string playerId, string playerName, List<string> characterIds, List<string> supportCardIds)
         {
             PlayerId = playerId;
+            PlayerName = playerName;
             this.supportCardIds = supportCardIds;
 
             foreach (var characterId in characterIds)

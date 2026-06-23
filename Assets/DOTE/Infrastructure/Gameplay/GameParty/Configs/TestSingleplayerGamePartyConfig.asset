@@ -12,5 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3fddebf37a527d4583d10313f1fde60, type: 3}
   m_Name: TestSingleplayerGamePartyConfig
   m_EditorClassIdentifier: 
-  computerPlayerConfig: {fileID: 0}
+  id:
+    guidString: 
+    lockGuid: 0
+  defaultPointsOfActionValue: 20
+  computerPlayerConfig: {fileID: 11400000, guid: b6ed1c1bb31cc054095fd809b275deea, type: 2}
   fieldPrefab: {fileID: 0}

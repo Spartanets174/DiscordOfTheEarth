@@ -1,32 +1,31 @@
 {
   "dependencies": {
     "com.solidalloy.type-references": {
-      "version": "2.16.0",
+      "version": "https://github.com/Oxydiz/ClassTypeReference-for-Unity.git",
       "depth": 0,
-      "source": "registry",
+      "source": "git",
       "dependencies": {
-        "com.solidalloy.util": "1.40.0",
+        "com.solidalloy.util": "1.40.1",
         "com.unity.settings-manager": "1.0.3",
-        "com.solidalloy.unity-dropdown": "1.2.0"
+        "com.solidalloy.unity-dropdown": "1.2.1"
       },
-      "url": "https://package.openupm.com"
+      "hash": "84c81cac09206cf85dec9e9f4a2a1f83835808ea"
     },
     "com.solidalloy.unity-dropdown": {
-      "version": "1.2.0",
-      "depth": 1,
-      "source": "registry",
+      "version": "https://github.com/lgarczyn/UnityDropdown.git",
+      "depth": 0,
+      "source": "git",
       "dependencies": {
-        "com.solidalloy.util": "1.40.0",
-        "org.nuget.system.memory": "4.5.4"
+        "com.solidalloy.util": "1.40.1"
       },
-      "url": "https://package.openupm.com"
+      "hash": "5264f5782c1daa44b03f8d9147c17f21fa87109f"
     },
     "com.solidalloy.util": {
-      "version": "1.40.0",
-      "depth": 1,
-      "source": "registry",
+      "version": "https://github.com/12Acorns/SolidUtilities-Fix-For-GetAssemblyName.git",
+      "depth": 0,
+      "source": "git",
       "dependencies": {},
-      "url": "https://package.openupm.com"
+      "hash": "1b36b8ce4368b60d72de12c7669f72ed08427812"
     },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
@@ -52,7 +51,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.visualstudio": {
-      "version": "2.0.27",
+      "version": "2.0.28",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -179,38 +178,6 @@
         "com.unity.modules.ui": "1.0.0",
         "com.unity.modules.imgui": "1.0.0"
       }
-    },
-    "org.nuget.system.buffers": {
-      "version": "4.5.1",
-      "depth": 3,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://package.openupm.com"
-    },
-    "org.nuget.system.memory": {
-      "version": "4.5.4",
-      "depth": 2,
-      "source": "registry",
-      "dependencies": {
-        "org.nuget.system.buffers": "4.5.1",
-        "org.nuget.system.numerics.vectors": "4.4.0",
-        "org.nuget.system.runtime.compilerservices.unsafe": "4.5.3"
-      },
-      "url": "https://package.openupm.com"
-    },
-    "org.nuget.system.numerics.vectors": {
-      "version": "4.4.0",
-      "depth": 3,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://package.openupm.com"
-    },
-    "org.nuget.system.runtime.compilerservices.unsafe": {
-      "version": "4.5.3",
-      "depth": 3,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://package.openupm.com"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",

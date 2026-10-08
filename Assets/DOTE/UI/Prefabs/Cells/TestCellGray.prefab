@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8235430684300106119}
   - component: {fileID: 1152286816184616537}
   m_Layer: 0
-  m_Name: TestCellWhite
+  m_Name: TestCellGray
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -104,7 +104,7 @@ PrefabInstance:
     - target: {fileID: 8972525955844037355, guid: 8e1f1944243a11845a4ba37b1a71ef9d, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: f3ec58acd4758db4dbe19beb7879f435, type: 2}
+      objectReference: {fileID: 2100000, guid: 3619d00cdc2d03d468d0be9d52cc775e, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -8700617353114198275, guid: 8e1f1944243a11845a4ba37b1a71ef9d, type: 3}
@@ -113,7 +113,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 5231362815219648064, guid: 8e1f1944243a11845a4ba37b1a71ef9d, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8996340007307122381}
+      addedObject: {fileID: 4387073402294661296}
   m_SourcePrefab: {fileID: 100100000, guid: 8e1f1944243a11845a4ba37b1a71ef9d, type: 3}
 --- !u!4 &1077402284175752809 stripped
 Transform:
@@ -125,7 +125,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 5231362815219648064, guid: 8e1f1944243a11845a4ba37b1a71ef9d, type: 3}
   m_PrefabInstance: {fileID: 682588733614070146}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &8996340007307122381
+--- !u!64 &4387073402294661296
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

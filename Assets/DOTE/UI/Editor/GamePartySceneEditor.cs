@@ -8,12 +8,14 @@ namespace DOTE.Gameplay.UI
     {
         private SerializedProperty grid;
         private SerializedProperty cellPrefabs;
+        private SerializedProperty obstaclePrefabs;
 
 
         private void OnEnable()
         {
             grid = serializedObject.FindProperty(nameof(grid));
             cellPrefabs = serializedObject.FindProperty(nameof(cellPrefabs));
+            obstaclePrefabs = serializedObject.FindProperty(nameof(obstaclePrefabs));
         }
 
         public override void OnInspectorGUI()
@@ -26,6 +28,8 @@ namespace DOTE.Gameplay.UI
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(grid);
             EditorGUILayout.PropertyField(cellPrefabs);
+            EditorGUILayout.PropertyField(obstaclePrefabs);
+
             if (EditorGUI.EndChangeCheck())
             {
                 serializedObject.ApplyModifiedProperties();

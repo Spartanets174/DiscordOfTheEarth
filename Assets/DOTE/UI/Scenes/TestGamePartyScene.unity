@@ -7702,6 +7702,7 @@ MonoBehaviour:
   - {fileID: -2018130270539039179, guid: a61eb0403e9148543a36b805fdb64a4f, type: 3}
   obstaclePrefabs:
   - {fileID: 3416176562226034846, guid: e12646b1c8cfc424188b1bf359590974, type: 3}
+  characterPrefabs: []
 --- !u!4 &1499879555
 Transform:
   m_ObjectHideFlags: 0

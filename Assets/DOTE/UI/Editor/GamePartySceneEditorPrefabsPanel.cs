@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,7 +13,6 @@ namespace DOTE.Gameplay.UI
 
         public GameObject SelectedPrefab { get; private set; }
         public Type SelectedPrefabType { get; private set; }
-        public int SelectedIndex { get; private set; }
 
         private int columnCount;
         private Vector2 scrollPos;
@@ -31,45 +32,64 @@ namespace DOTE.Gameplay.UI
 
             SelectedPrefab = null;
             SelectedPrefabType = null;
-            SelectedIndex = -1;
             columnCount = 4;
         }
 
         public void ResetSelectedPrefab()
         {
             SelectedPrefab = null;
-            SelectedPrefabType = null;
-            SelectedIndex = -1;
+            SelectedPrefabType = null; ;
         }
 
         public void DrawPrefabsPanel(Rect position)
         {
-            // ---- Сетка префабов ----
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
             float availableWidth = position.width - 20f;
             columnCount = Mathf.Max(1, Mathf.FloorToInt((availableWidth + Padding) / (ItemSize + Padding)));
 
-            int itemCount = gamePartyScene.CellPrefabs.Count;
-            if (itemCount > 0)
-            {
-                for (int i = 0; i < itemCount; i += columnCount)
-                {
-                    EditorGUILayout.BeginHorizontal();
-                    for (int j = 0; j < columnCount && i + j < itemCount; j++)
-                    {
-                        int index = i + j;
-                        ACellView prefab = gamePartyScene.CellPrefabs[index];
-                        bool isSelected = (index == SelectedIndex);
-                        DrawPrefabItem<ACellView>(prefab.gameObject, index, isSelected);
-                    }
-                    EditorGUILayout.EndHorizontal();
-                }
-            }
+            GUILayout.Label("Доступные префабы клеток", GamePartySceneEditorStyles.SecondLevelHeader);
+            GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
+            DrawPrefabs(gamePartyScene.CellPrefabs);
+
+            GUILayout.Space(GamePartySceneEditorStyles.DefaultSpace);
+
+            GUILayout.Label("Доступные префабы препятствий", GamePartySceneEditorStyles.SecondLevelHeader);
+            GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
+            DrawPrefabs(gamePartyScene.ObstaclePrefabs);
+
+            GUILayout.Space(GamePartySceneEditorStyles.DefaultSpace);
+
+            GUILayout.Label("Доступные префабы персонажей", GamePartySceneEditorStyles.SecondLevelHeader);
+            GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
+            DrawPrefabs(gamePartyScene.CharacterPrefabs);
 
             EditorGUILayout.EndScrollView();
         }
 
+        private void DrawPrefabs<T>(List<T> prefabs) where T : MonoBehaviour
+        {
+            int itemCount = prefabs.Count;
+            int selectedPrefabIndex = -1;
+            List<GameObject> gameObjects = prefabs.Select(x => x.gameObject).ToList();
+            if (gameObjects.Contains(SelectedPrefab))
+            {
+                selectedPrefabIndex = gameObjects.IndexOf(SelectedPrefab);
+            }
+
+            for (int i = 0; i < itemCount; i += columnCount)
+            {
+                EditorGUILayout.BeginHorizontal();
+                for (int j = 0; j < columnCount && i + j < itemCount; j++)
+                {
+                    int index = i + j;
+                    T prefab = prefabs[index];
+                    bool isSelected = (index == selectedPrefabIndex);
+                    DrawPrefabItem<T>(prefab.gameObject, index, isSelected);
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+        }
 
         private void DrawPrefabItem<T>(GameObject prefab, int index, bool isSelected)
         {
@@ -104,7 +124,7 @@ namespace DOTE.Gameplay.UI
             // Обработка клика для выбора префаба
             if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
             {
-                if (SelectedPrefab == prefab && SelectedIndex == index)
+                if (SelectedPrefab == prefab)
                 {
                     togglePlacementMode.Invoke();
                 }
@@ -112,7 +132,6 @@ namespace DOTE.Gameplay.UI
                 {
                     SelectedPrefab = prefab;
                     SelectedPrefabType = typeof(T);
-                    SelectedIndex = index;
 
                     enablePlacementMode.Invoke();
                 }

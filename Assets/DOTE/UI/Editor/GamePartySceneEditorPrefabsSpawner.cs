@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using Zenject.SpaceFighter;
 
 namespace DOTE.Gameplay.UI
 {
@@ -12,14 +12,19 @@ namespace DOTE.Gameplay.UI
         public bool DestroyingMode { get; private set; }
         public bool PlacementMode { get; private set; }
 
+        public Dictionary<Vector2Int, ACellView> SpawnedCells { get; private set; }
+
         private GamePartySceneEditorPrefabsPanel prefabsPanel;
         private Grid grid;
 
         private GameObject ghostObject;
+        private Type ghostObjectType;
         private Material ghostCreateMaterial;
         private Material ghostDestroyMaterial;
 
         private Type cellType;
+        private Type obstacleType;
+        private Type characterType;
 
         private Action repaint;
 
@@ -27,12 +32,23 @@ namespace DOTE.Gameplay.UI
         {
             this.prefabsPanel = prefabsPanel;
             this.grid = grid;
+            this.repaint = repaint;
 
             HexRadius = 1;
+
             cellType = typeof(ACellView);
+            obstacleType = typeof(AObstacleView);
+            characterType = typeof(CharacterView);
+
             PlacementMode = false;
             DestroyingMode = false;
-            this.repaint = repaint;
+            
+            SpawnedCells = new();
+
+            foreach (ACellView aCellView in grid.GetComponentsInChildren<ACellView>())
+            {
+                SpawnedCells.Add(GetCellIndexByPos(aCellView.transform.position), aCellView);
+            }
         }
 
         public void SetHexRadius(float radius)
@@ -40,11 +56,11 @@ namespace DOTE.Gameplay.UI
             HexRadius = radius;
         }
 
-        public void SetGhostPostition(Vector3 postition)
+        public void SetGhostPosition(Vector3 position)
         {
             if (ghostObject != null)
             {
-                ghostObject.transform.position = postition;
+                ghostObject.transform.position = position;
             }
         }
 
@@ -66,6 +82,12 @@ namespace DOTE.Gameplay.UI
             SetGhostMaterial(DestroyingMode ? ghostDestroyMaterial : ghostCreateMaterial);
         }
 
+        public Vector2Int GetCellIndexByPos(Vector3 position)
+        {
+            Vector3Int worldPos = grid.WorldToCell(GamePartySceneEditorTools.SnapToHexGrid(position, grid));
+            return new(worldPos.x, worldPos.z);
+        }
+
         public void EnablePlacementMode()
         {
             if (prefabsPanel.SelectedPrefab == null)
@@ -75,9 +97,18 @@ namespace DOTE.Gameplay.UI
 
             PlacementMode = true;
 
-            // Создаём ghost, если его нет
-            if (prefabsPanel.SelectedPrefab != null && ghostObject == null)
-                CreateGhost();
+            if (prefabsPanel.SelectedPrefab != null)
+            {
+                if (ghostObject == null)
+                {
+                    CreateGhost();
+                }
+                else if (ghostObjectType != prefabsPanel.SelectedPrefabType)
+                {
+                    DestroyGhost();
+                    CreateGhost();
+                }
+            }
 
             repaint.Invoke();
             SceneView.RepaintAll();
@@ -97,6 +128,7 @@ namespace DOTE.Gameplay.UI
             if (PlacementMode)
                 DisablePlacementMode();
 
+            DestroyGhost();
             GameObject.DestroyImmediate(ghostCreateMaterial);
             GameObject.DestroyImmediate(ghostDestroyMaterial);
         }
@@ -107,6 +139,22 @@ namespace DOTE.Gameplay.UI
             {
                 GameObject.DestroyImmediate(ghostObject);
                 ghostObject = null;
+                ghostObjectType = null;
+            }
+        }
+
+        public void DestroyOrReplaceHoveredObject(Component targetView, Vector3 targetPosition)
+        {
+            Component sourcePrefab = PrefabUtility.GetCorrespondingObjectFromSource(targetView);
+
+            if (sourcePrefab != null && sourcePrefab.gameObject != prefabsPanel.SelectedPrefab)
+            {
+                DestroyPrefab(targetView);
+                PlacePrefab(prefabsPanel.SelectedPrefabType, targetPosition, Quaternion.identity);
+            }
+            else
+            {
+                DestroyPrefab(targetView);
             }
         }
 
@@ -121,6 +169,14 @@ namespace DOTE.Gameplay.UI
                 instance = PlaceCellPrefab(position, rotation);
             }
 
+            if (prefabType == obstacleType || prefabType == characterType)
+            {
+                if (SpawnedCells.TryGetValue(GetCellIndexByPos(position), out ACellView cell))
+                {
+                    instance = PlacePrefab(cell.transform);
+                }
+            }
+
             if (instance != null)
             {
                 Undo.RegisterCreatedObjectUndo(instance, "Place Prefab");
@@ -128,18 +184,56 @@ namespace DOTE.Gameplay.UI
             }
             else
             {
-                Debug.LogWarning("instance null");
-            }           
+                Debug.LogWarning("Создать не получилось!");
+            }
         }
 
         private GameObject PlaceCellPrefab(Vector3 position, Quaternion rotation)
         {
-            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefabsPanel.SelectedPrefab, grid.transform);
+            Vector2Int index = GetCellIndexByPos(position);
+
+            if (SpawnedCells.ContainsKey(index))
+            {
+                Debug.LogWarning("Невозможно установить клетку, тк это место уже занято!");
+                return null;
+            }
+
+            GameObject instance = InstantiatePrefab(grid.transform);
+
             instance.transform.position = position;
             instance.transform.rotation = rotation;
-            instance.transform.localScale = Vector3.one * HexRadius;
+
+            instance.transform.GetChild(0).localScale = Vector3.one * HexRadius;
+
+            SpawnedCells.TryAdd(index, instance.GetComponent<ACellView>());
 
             return instance.gameObject;
+        }
+
+        private GameObject PlacePrefab(Transform parentCell)
+        {
+            GameObject instance = InstantiatePrefab(parentCell);
+
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+
+            return instance.gameObject;
+        }
+
+        private GameObject InstantiatePrefab(Transform parent)
+        {
+            return (GameObject)PrefabUtility.InstantiatePrefab(prefabsPanel.SelectedPrefab, parent);
+        }
+
+        private void DestroyPrefab(Component targetViewType)
+        {
+            if (targetViewType is ACellView aCellView)
+            {
+                SpawnedCells.Remove(GetCellIndexByPos(aCellView.transform.position));
+            }
+
+            Undo.DestroyObjectImmediate(targetViewType.gameObject);
         }
 
         private void CreateGhost()
@@ -147,6 +241,7 @@ namespace DOTE.Gameplay.UI
             if (prefabsPanel.SelectedPrefab == null) return;
 
             ghostObject = (GameObject)PrefabUtility.InstantiatePrefab(prefabsPanel.SelectedPrefab);
+            ghostObjectType = prefabsPanel.SelectedPrefabType;
             ghostCreateMaterial = CreateGhostMaterial(new Color(0, 1, 1, 0.3f));
             ghostDestroyMaterial = CreateGhostMaterial(new Color(1, 0, 0, 0.3f));
 
@@ -168,7 +263,15 @@ namespace DOTE.Gameplay.UI
             SetLayerRecursively(ghostObject, LayerMask.NameToLayer("Ignore Raycast"));
             ghostObject.hideFlags = HideFlags.HideAndDontSave;
             ghostObject.transform.position = Vector3.zero;
-            ghostObject.transform.localScale = Vector3.one * HexRadius;
+
+            if (prefabsPanel.SelectedPrefabType == cellType)
+            {
+                ghostObject.transform.localScale = Vector3.one * HexRadius;
+            }
+            else
+            {
+                ghostObject.transform.localScale = Vector3.one;
+            }
         }
 
         private void SetGhostMaterial(Material material)

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DOTE.Gameplay.Infrastructure;
+using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,13 +8,38 @@ namespace DOTE.Gameplay.UI
 {
     public class GamePartySceneEditorWindow : EditorWindow
     {
+        public class GamePartySceneEditorWindowDataContainer : ScriptableObject
+        {
+            public Grid Grid => grid;
+            public SingleplayerGamePartyConfig GamePartyConfig => gamePartyConfig;
+            public List<ACellView> CellPrefabs => cellPrefabs;
+            public List<AObstacleView> ObstaclePrefabs => obstaclePrefabs;
+
+            [SerializeField]
+            private Grid grid;
+
+            [SerializeField]
+            private SingleplayerGamePartyConfig gamePartyConfig;
+
+            [SerializeField]
+            private List<ACellView> cellPrefabs = new();
+
+            [SerializeField]
+            private List<AObstacleView> obstaclePrefabs = new();
+        }
+
         private const string HexSizeLabel = "Размер гекса";
         private const string MaxNumOfCellsInDirectionLabel = "Дальность отрисовки сетки";
 
-        private GamePartyScene gamePartyScene;
+        private GamePartySceneEditorWindowDataContainer dataContainer;
         private GamePartySceneEditorPrefabsPanel prefabsPanel;
         private GamePartySceneEditorPrefabsSpawner prefabsSpawner;
+        private SerializedObject serializedObject;
 
+        private SerializedProperty grid;
+        private SerializedProperty gamePartyConfig;
+        private SerializedProperty cellPrefabs;
+        private SerializedProperty obstaclePrefabs;
 
         [SerializeField]
         private int maxNumOfCellsInDirection = 10;
@@ -25,24 +52,26 @@ namespace DOTE.Gameplay.UI
         private Type obstacleType;
         private Type characterType;
 
-        public static void ShowWindow(GamePartyScene gamePartyScene)
+        [MenuItem("DOTE/GamePartySceneEditorWindow")]
+        public static void ShowWindow()
         {
             GamePartySceneEditorWindow window = GetWindow<GamePartySceneEditorWindow>("GamePartySceneEditor");
-
-            if (window.gamePartyScene != gamePartyScene)
-            {
-                window.Init(gamePartyScene);
-            }
+            window.Init();
         }
 
-        public void Init(GamePartyScene gamePartyScene)
+        public void Init()
         {
-            this.gamePartyScene = gamePartyScene;
-            prefabsPanel = new GamePartySceneEditorPrefabsPanel(gamePartyScene, Repaint, TogglePlacementMode, EnablePlacementMode);
-            prefabsSpawner = new GamePartySceneEditorPrefabsSpawner(prefabsPanel, gamePartyScene.Grid, Repaint);
+            dataContainer = CreateInstance<GamePartySceneEditorWindowDataContainer>();
+
+            serializedObject = new SerializedObject(dataContainer);
 
             originalLabelWidth = EditorGUIUtility.labelWidth;
             defaultLabelWidth = CalculateFieldWidth(MaxNumOfCellsInDirectionLabel) + 5f;
+
+            grid = serializedObject.FindProperty(nameof(grid));
+            gamePartyConfig = serializedObject.FindProperty(nameof(gamePartyConfig));
+            cellPrefabs = serializedObject.FindProperty(nameof(cellPrefabs));
+            obstaclePrefabs = serializedObject.FindProperty(nameof(obstaclePrefabs));
 
             cellType = typeof(ACellView);
             obstacleType = typeof(AObstacleView);
@@ -53,10 +82,6 @@ namespace DOTE.Gameplay.UI
 
         private void OnEnable()
         {
-            if (gamePartyScene == null)
-            {
-                Init(FindObjectOfType<GamePartyScene>());
-            }
             EditorApplication.update += OnEditorUpdate;
             SceneView.duringSceneGui += OnSceneGUI;
         }
@@ -92,11 +117,6 @@ namespace DOTE.Gameplay.UI
 
         private void OnGUI()
         {
-            if (gamePartyScene == null || prefabsSpawner == null || prefabsPanel == null)
-            {
-                Init(FindObjectOfType<GamePartyScene>());
-            }
-
             GUILayout.Space(GamePartySceneEditorStyles.DefaultSpace);
 
             GUILayout.Label("Редактор сцены партии", GamePartySceneEditorStyles.FirstLevelHeader);
@@ -111,21 +131,44 @@ namespace DOTE.Gameplay.UI
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
             EditorGUILayout.BeginVertical(GamePartySceneEditorStyles.BoxPaddingStyle);
 
-            GUILayout.Label("Редактор поля", GamePartySceneEditorStyles.SecondLevelHeader);
+            GUILayout.Label("Настройки редактора поля", GamePartySceneEditorStyles.SecondLevelHeader);
 
             GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
 
+            EditorGUIUtility.labelWidth = defaultLabelWidth;
+
+            serializedObject.Update();
+
+            EditorGUILayout.PropertyField(grid);
+            EditorGUILayout.PropertyField(gamePartyConfig);
+            EditorGUILayout.PropertyField(cellPrefabs, true);
+            EditorGUILayout.PropertyField(obstaclePrefabs, true);
+
+            serializedObject.ApplyModifiedProperties();
+
+            if (dataContainer.Grid == null)
+            {
+                EditorGUILayout.HelpBox("Для редактирования настроек добавьте Grid компонент", MessageType.Info);
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
+                return;
+            }
+
+            if (prefabsPanel == null && prefabsSpawner == null)
+            {
+                prefabsPanel = new GamePartySceneEditorPrefabsPanel(dataContainer, Repaint, TogglePlacementMode, EnablePlacementMode);
+                prefabsSpawner = new GamePartySceneEditorPrefabsSpawner(prefabsPanel, dataContainer.Grid, Repaint);
+            }
+
             EditorGUI.BeginChangeCheck();
 
-            EditorGUIUtility.labelWidth = defaultLabelWidth;
-            prefabsSpawner.SetHexRadius(EditorGUILayout.FloatField(HexSizeLabel, gamePartyScene.Grid.cellSize.x));
+            prefabsSpawner.SetHexRadius(EditorGUILayout.FloatField(HexSizeLabel, dataContainer.Grid.cellSize.x));
             maxNumOfCellsInDirection = EditorGUILayout.IntField(MaxNumOfCellsInDirectionLabel, maxNumOfCellsInDirection);
 
             if (EditorGUI.EndChangeCheck())
             {
-                // Записываем напрямую в компонент Grid
-                gamePartyScene.Grid.cellSize = Vector3.one * prefabsSpawner.HexRadius;
-                EditorUtility.SetDirty(gamePartyScene.Grid);
+                dataContainer.Grid.cellSize = Vector3.one * prefabsSpawner.HexRadius;
+                EditorUtility.SetDirty(dataContainer.Grid);
                 SceneView.RepaintAll();
                 Repaint();
             }
@@ -184,7 +227,7 @@ namespace DOTE.Gameplay.UI
                 return false;
             }
 
-            GamePartySceneEditorTools.DrawHexGrid(gamePartyScene.Grid, maxNumOfCellsInDirection, color: new Color(0.4f, 0.8f, 1f, 0.5f));
+            GamePartySceneEditorTools.DrawHexGrid(dataContainer.Grid, maxNumOfCellsInDirection, color: new Color(0.4f, 0.8f, 1f, 0.5f));
 
             DrawCancelCaption();
 
@@ -195,14 +238,13 @@ namespace DOTE.Gameplay.UI
                 return false;
             }
 
-            Component targetView = GetTargetView(hit);
+            Vector3 targetPosition = GetTargetPosition(hit);
+            Component targetView = GetTargetView(targetPosition, hit.collider);
 
             if (targetView != null && !prefabsSpawner.DestroyingMode && !mouseDragOrDownPrevFrame)
             {
                 prefabsSpawner.SetDestroyingMode(true);
             }
-
-            Vector3 targetPosition = GamePartySceneEditorTools.SnapToHexGrid(hit.point, gamePartyScene.Grid);
 
             prefabsSpawner.SetGhostPosition(targetPosition);
 
@@ -218,12 +260,45 @@ namespace DOTE.Gameplay.UI
             return true;
         }
 
-
-        private Component GetTargetView(RaycastHit hit)
+        private Vector3 GetTargetPosition(RaycastHit hit)
         {
+            bool isSelectedObstacle = prefabsPanel.SelectedPrefabType == obstacleType;
+            bool isSelectedCharacter = prefabsPanel.SelectedPrefabType == characterType;
+
+            if (isSelectedObstacle || isSelectedCharacter)
+            {
+                List<Vector3> cellPositions = prefabsSpawner.GetAllSpawnedCellPositions();
+                if (prefabsSpawner.SpawnedCells.TryGetValue(prefabsSpawner.GetCellIndexByPos(hit.point), out ACellView cell))
+                {
+                    if ((cell.GetComponentInChildren<AObstacleView>() != null && isSelectedCharacter ) ||
+                       (cell.GetComponentInChildren<CharacterView>() != null && isSelectedObstacle))
+                    {
+                        return GamePartySceneEditorTools.FindClosestNeighborByWorldPosition(cell.transform.position, dataContainer.Grid);
+                    }
+                    else
+                    {
+                        return GamePartySceneEditorTools.SnapToHexGrid(cell.transform.position, dataContainer.Grid);
+                    }
+                }
+                else
+                {
+                    return GamePartySceneEditorTools.FindClosestNeighbor(cellPositions, hit.point);
+                }
+            }
+
+            return GamePartySceneEditorTools.SnapToHexGrid(hit.point, dataContainer.Grid);
+        }
+
+        private Component GetTargetView(Vector3 position, Collider collider)
+        {
+            if (collider == null)
+            {
+                return null;
+            }
+
             if (prefabsPanel.SelectedPrefabType == obstacleType || prefabsPanel.SelectedPrefabType == characterType)
             {
-                if (prefabsSpawner.SpawnedCells.TryGetValue(prefabsSpawner.GetCellIndexByPos(hit.point), out ACellView cell))
+                if (prefabsSpawner.SpawnedCells.TryGetValue(prefabsSpawner.GetCellIndexByPos(position), out ACellView cell))
                 {
                     Component targetViewInCell = cell.GetComponentInChildren(prefabsPanel.SelectedPrefabType);
 
@@ -234,7 +309,7 @@ namespace DOTE.Gameplay.UI
                 }
             }
 
-            return hit.collider?.GetComponentInParent(prefabsPanel.SelectedPrefabType);
+            return collider?.GetComponentInParent(prefabsPanel.SelectedPrefabType);
         }
 
         private void DrawCancelCaption()

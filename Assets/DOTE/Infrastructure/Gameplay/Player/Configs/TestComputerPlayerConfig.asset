@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 985ba8df14267d54a949e2a3ed4c1e50, type: 3}
-  m_Name: ComputerPlayerConfig
+  m_Name: TestComputerPlayerConfig
   m_EditorClassIdentifier: 
   id:
     guidString: 6a10fd31-4338-48a7-8f41-3658b1502b59
     lockGuid: 1
   computerPlayerName: Test
-  computerPlayerImage: {fileID: 0}
+  computerPlayerImage: {fileID: 21300000, guid: 29c435903c4f8404f87a061424329530, type: 3}
   characters:
   - {fileID: 11400000, guid: 3df1a0157af1a864da90b70327b6b390, type: 2}
   - {fileID: 11400000, guid: 3df1a0157af1a864da90b70327b6b390, type: 2}

@@ -11,13 +11,17 @@ namespace DOTE.Gameplay.Infrastructure
         [SerializeField]
         private int defaultPointsOfActionValue = 20;
         [SerializeField]
-        private ComputerPlayerConfig computerPlayerConfig;
+        private ComputerEnemyPlayerConfig computerPlayerConfig;
+        [SerializeField]
+        private AIEnemyPlayerConfig enemyBotPlayerConfig;
+
         [SerializeField]
         private GameObject fieldPrefab;
 
         public string GetId() => id.guidString;
         public int GetDefaultPointsOfActionValue() => defaultPointsOfActionValue;
-        public ComputerPlayerConfig GetComputerPlayerConfig() => computerPlayerConfig;
+        public ComputerEnemyPlayerConfig GetComputerPlayerConfig() => computerPlayerConfig;
+        public AIEnemyPlayerConfig GetAIEnemyPlayerConfig() => enemyBotPlayerConfig;
         public GameObject GetFieldPrefab() => fieldPrefab;
     }
 }

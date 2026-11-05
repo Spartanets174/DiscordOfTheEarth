@@ -17,4 +17,5 @@ MonoBehaviour:
     lockGuid: 0
   defaultPointsOfActionValue: 20
   computerPlayerConfig: {fileID: 11400000, guid: b6ed1c1bb31cc054095fd809b275deea, type: 2}
+  enemyBotPlayerConfig: {fileID: 11400000, guid: 53009e7a41c9494448c9438cf32858a6, type: 2}
   fieldPrefab: {fileID: 0}

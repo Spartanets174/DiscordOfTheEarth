@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d369a32890607a3439e9de3fd4eb8fe7, type: 3}
   m_Name: TestCharacterConfig
   m_EditorClassIdentifier: 
+  characterPrefab: {fileID: 4060529540758854224, guid: 5dc05ab3c2be5e9459883dd3e6aea22d, type: 3}
   characterInformationConfig: {fileID: 11400000, guid: 6dc48f86127580148ac2d07c8604954c, type: 2}
   attackAbilityConfig: {fileID: 11400000, guid: 7cc21dc0b65c88c48a8a88d42f62ed27, type: 2}
   protectiveAbilityConfig: {fileID: 11400000, guid: 7cc21dc0b65c88c48a8a88d42f62ed27, type: 2}
-  enchancingAbilityConfig: {fileID: 11400000, guid: c690b6e8b96c3f6419a09b394aca8fc0, type: 2}
+  enhancingAbilityConfig: {fileID: 11400000, guid: c690b6e8b96c3f6419a09b394aca8fc0, type: 2}
   passiveAbilityConfig: {fileID: 11400000, guid: 85fd1906e012e3146a3ea303073af439, type: 2}
   defaultAbilityUsingCost: 11
   defaultAttackCost: 2

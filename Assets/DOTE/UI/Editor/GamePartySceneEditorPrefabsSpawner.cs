@@ -88,6 +88,18 @@ namespace DOTE.Gameplay.UI
             return new(worldPos.x, worldPos.z);
         }
 
+        public List<Vector3> GetAllSpawnedCellPositions()
+        {
+            List<Vector3> spawnedCellPositions = new();
+
+            foreach (var spawnedCell in SpawnedCells)
+            {
+                spawnedCellPositions.Add(spawnedCell.Value.transform.position);
+            }
+
+            return spawnedCellPositions;
+        }
+
         public void EnablePlacementMode()
         {
             if (prefabsPanel.SelectedPrefab == null)
@@ -173,7 +185,11 @@ namespace DOTE.Gameplay.UI
             {
                 if (SpawnedCells.TryGetValue(GetCellIndexByPos(position), out ACellView cell))
                 {
-                    instance = PlacePrefab(cell.transform);
+                    if (cell.GetComponentInChildren<AObstacleView>() == null && 
+                        cell.GetComponentInChildren<CharacterView>() == null)
+                    {
+                        instance = PlacePrefab(cell.transform);
+                    }
                 }
             }
 

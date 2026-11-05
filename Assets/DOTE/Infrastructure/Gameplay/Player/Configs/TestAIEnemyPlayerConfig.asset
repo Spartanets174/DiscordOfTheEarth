@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67120d1eab41e2144b7162fc5cfe44b2, type: 3}
+  m_Name: TestAIEnemyPlayerConfig
+  m_EditorClassIdentifier: 
+  id:
+    guidString: 12a628ff-ef40-4910-a560-4cab29dfeb93
+    lockGuid: 1
+  enemyPlayerName: "\u0422\u0435\u0441\u0442\u043E\u0432\u044B\u0439"
+  enemyPlayerImage: {fileID: 21300000, guid: a887e05953093f3498bf6359b78a9447, type: 3}
+  characters:
+  - {fileID: 11400000, guid: 3df1a0157af1a864da90b70327b6b390, type: 2}
+  - {fileID: 11400000, guid: 3df1a0157af1a864da90b70327b6b390, type: 2}
+  - {fileID: 11400000, guid: 3df1a0157af1a864da90b70327b6b390, type: 2}
+  - {fileID: 11400000, guid: 3df1a0157af1a864da90b70327b6b390, type: 2}
+  - {fileID: 11400000, guid: 3df1a0157af1a864da90b70327b6b390, type: 2}
+  supportCards: []
+  behaviorAlgorithmPrefab: {fileID: 0}

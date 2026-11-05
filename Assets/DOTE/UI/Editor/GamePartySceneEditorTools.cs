@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -54,6 +55,83 @@ namespace DOTE.Gameplay.UI
 
             Vector3 snappedLocal = new Vector3(outX, local.y, outZ);
             return t.TransformPoint(snappedLocal);
+        }
+
+        public static Vector3 FindClosestNeighborByWorldPosition(Vector3 worldPos, Grid grid)
+        {
+            return FindClosestNeighbor(GetHexNeighbors(worldPos, grid), worldPos);
+        }
+
+        public static List<Vector3> GetHexNeighbors(Vector3 worldCenter, Grid grid)
+        {
+            var result = new List<Vector3>(6);
+            if (grid == null) return result;
+
+            Transform t = grid.transform;
+            float R = Mathf.Max(grid.cellSize.x, 0.01f);
+
+            // 1. Переводим мировую точку в локальные координаты Grid
+            Vector3 local = t.InverseTransformPoint(worldCenter);
+            float x = local.x;
+            float z = local.z;
+
+            // 2. Переводим в axial-координаты (pointy-top)
+            float q = (Mathf.Sqrt(3f) / 3f * x - 1f / 3f * z) / R;
+            float r = (2f / 3f * z) / R;
+
+            // Округляем до целых (на случай погрешности)
+            int qRounded = Mathf.RoundToInt(q);
+            int rRounded = Mathf.RoundToInt(r);
+
+            // 3. Смещения соседей для pointy-top (axial)
+            // Порядок: NE, E, SE, SW, W, NW (по часовой стрелке)
+            int[,] directions = new int[,]
+            {
+        {  1,  0 }, // NE (вправо-вверх)
+        {  1, -1 }, // E  (вправо) — для axial это (1, -1)
+        {  0, -1 }, // SE (вправо-вниз)
+        { -1,  0 }, // SW (влево-вниз)
+        { -1,  1 }, // W  (влево)
+        {  0,  1 }  // NW (влево-вверх)
+            };
+
+            // 4. Для каждого соседа вычисляем мировую позицию
+            for (int i = 0; i < 6; i++)
+            {
+                int nq = qRounded + directions[i, 0];
+                int nr = rRounded + directions[i, 1];
+
+                // axial -> локальные x,z
+                float nx = R * (Mathf.Sqrt(3f) * nq + Mathf.Sqrt(3f) / 2f * nr);
+                float nz = R * (1.5f * nr);
+
+                Vector3 localNeighbor = new Vector3(nx, local.y, nz);
+                Vector3 worldNeighbor = t.TransformPoint(localNeighbor);
+                result.Add(worldNeighbor);
+            }
+
+            return result;
+        }
+
+        public static Vector3 FindClosestNeighbor(List<Vector3> neighbors, Vector3 worldPosition)
+        {
+            if (neighbors == null || neighbors.Count == 0)
+                return worldPosition;
+
+            Vector3 closest = neighbors[0];
+            float bestSqrDist = (closest - worldPosition).sqrMagnitude;
+
+            for (int i = 1; i < neighbors.Count; i++)
+            {
+                float sqrDist = (neighbors[i] - worldPosition).sqrMagnitude;
+                if (sqrDist < bestSqrDist)
+                {
+                    bestSqrDist = sqrDist;
+                    closest = neighbors[i];
+                }
+            }
+
+            return closest;
         }
 
         /// <summary>

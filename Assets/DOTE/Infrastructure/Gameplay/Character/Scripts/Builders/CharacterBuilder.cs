@@ -46,7 +46,7 @@ namespace DOTE.Gameplay.Infrastructure
                 new IntCharacterCharacteristic(characterConfig.GetDefaultAttackCost()),
                 BuildActiveAbility(characterConfig.GetAttackAbilityConfig()),
                 BuildActiveAbility(characterConfig.GetProtectiveAbilityConfig()),
-                BuildActiveAbility(characterConfig.GetEnchancingAbilityConfig()),
+                BuildActiveAbility(characterConfig.GetEnhancingAbilityConfig()),
                 BuildPassiveAbility(characterConfig.GetPassiveAbilityConfig()),
                 defaultMoveCostByCellType);
         }

@@ -1,8 +1,10 @@
+using DOTE.Gameplay.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static DOTE.Gameplay.UI.GamePartySceneEditorWindow;
 
 namespace DOTE.Gameplay.UI
 {
@@ -10,6 +12,8 @@ namespace DOTE.Gameplay.UI
     {
         private const float ItemSize = 80f;
         private const float Padding = 6f;
+        private const string AIEnemyText = "бота-противника";
+        private const string ComputerEnemyText = "противника, управляемого компьютером";
 
         public GameObject SelectedPrefab { get; private set; }
         public Type SelectedPrefabType { get; private set; }
@@ -17,15 +21,15 @@ namespace DOTE.Gameplay.UI
         private int columnCount;
         private Vector2 scrollPos;
 
-        private GamePartyScene gamePartyScene;
+        private GamePartySceneEditorWindowDataContainer dataContainer;
 
         private Action repaint;
         private Action togglePlacementMode;
         private Action enablePlacementMode;
 
-        public GamePartySceneEditorPrefabsPanel(GamePartyScene gamePartyScene, Action repaint, Action togglePlacementMode, Action enablePlacementMode)
+        public GamePartySceneEditorPrefabsPanel(GamePartySceneEditorWindowDataContainer dataContainer, Action repaint, Action togglePlacementMode, Action enablePlacementMode)
         {
-            this.gamePartyScene = gamePartyScene;
+            this.dataContainer = dataContainer;
             this.repaint = repaint;
             this.togglePlacementMode = togglePlacementMode;
             this.enablePlacementMode = enablePlacementMode;
@@ -48,27 +52,123 @@ namespace DOTE.Gameplay.UI
             float availableWidth = position.width - 20f;
             columnCount = Mathf.Max(1, Mathf.FloorToInt((availableWidth + Padding) / (ItemSize + Padding)));
 
-            GUILayout.Label("Доступные префабы клеток", GamePartySceneEditorStyles.SecondLevelHeader);
-            GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
-            DrawPrefabs(gamePartyScene.CellPrefabs);
+            DrawCellPrefabs();
 
             GUILayout.Space(GamePartySceneEditorStyles.DefaultSpace);
 
-            GUILayout.Label("Доступные префабы препятствий", GamePartySceneEditorStyles.SecondLevelHeader);
-            GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
-            DrawPrefabs(gamePartyScene.ObstaclePrefabs);
+            DrawObstaclePrefabs();
 
             GUILayout.Space(GamePartySceneEditorStyles.DefaultSpace);
 
-            GUILayout.Label("Доступные префабы персонажей", GamePartySceneEditorStyles.SecondLevelHeader);
-            GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
-            DrawPrefabs(gamePartyScene.CharacterPrefabs);
+            DrawEnemyCharacterPrefabs(true);
+
+            GUILayout.Space(GamePartySceneEditorStyles.DefaultSpace);
+
+            DrawEnemyCharacterPrefabs(false);
 
             EditorGUILayout.EndScrollView();
         }
 
+        private void DrawCellPrefabs()
+        {
+            GUILayout.Label("Доступные префабы клеток", GamePartySceneEditorStyles.SecondLevelHeader);
+            GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
+
+            List<ACellView> cellPrefabs = dataContainer.CellPrefabs.Where(x => x != null).ToList();
+
+            if (cellPrefabs.Count == 0)
+            {
+                EditorGUILayout.HelpBox("Добавьте хотя бы один префаб клетки", MessageType.Info);
+            }
+            else
+            {
+                DrawPrefabs(cellPrefabs);
+            }
+        }
+
+        private void DrawObstaclePrefabs()
+        {
+            GUILayout.Label("Доступные префабы препятствий", GamePartySceneEditorStyles.SecondLevelHeader);
+            GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
+
+            List<AObstacleView> obstaclePrefabs = dataContainer.ObstaclePrefabs.Where(x => x != null).ToList();
+
+            if (obstaclePrefabs.Count == 0)
+            {
+                EditorGUILayout.HelpBox("Добавьте хотя бы один префаб препятствия", MessageType.Info);
+            }
+            else
+            {
+                DrawPrefabs(obstaclePrefabs);
+            }
+        }
+
+        private void DrawEnemyCharacterPrefabs(bool isAIEnemy)
+        {
+            string enemyText = isAIEnemy ? AIEnemyText : ComputerEnemyText;
+
+            GUILayout.Label($"Доступные префабы персонажей для {enemyText}", GamePartySceneEditorStyles.SecondLevelHeader);
+            GUILayout.Space(GamePartySceneEditorStyles.SmallSpace);
+
+            if (dataContainer.GamePartyConfig == null)
+            {
+                EditorGUILayout.HelpBox("Добавьте конфигурацию игровой партии", MessageType.Info);
+                return;
+            }
+
+            object enemyPlayerConfig = null;
+
+            if (isAIEnemy)
+            {
+                enemyPlayerConfig = dataContainer.GamePartyConfig.GetAIEnemyPlayerConfig();
+            }
+            else
+            {
+                enemyPlayerConfig = dataContainer.GamePartyConfig.GetComputerPlayerConfig();
+            }
+
+            if (enemyPlayerConfig == null)
+            {
+                EditorGUILayout.HelpBox($"Добавьте конфигурацию для {enemyText}", MessageType.Info);
+                return;
+            }
+
+            List<CharacterConfig> characterConfigs = new();
+
+            if (enemyPlayerConfig is AIEnemyPlayerConfig aiEnemyPlayerConfig)
+            {
+                characterConfigs = aiEnemyPlayerConfig.GetEnemyPlayerCharacters();
+            }
+            else if (enemyPlayerConfig is ComputerEnemyPlayerConfig computerPlayerConfig)
+            {
+                characterConfigs = computerPlayerConfig.GetComputerPlayerCharacters();
+            }
+
+            if (characterConfigs.Count == 0)
+            {
+                EditorGUILayout.HelpBox($"Добавьте в конфигурацию для {enemyText} конфигурации его персонажей", MessageType.Info);
+                return;
+            }
+
+            List<CharacterView> characterViews = characterConfigs.Select(x => x.GetCharacterPrefab()).Where(x => x != null).ToList();
+
+            if (characterViews.Count == 0)
+            {
+                EditorGUILayout.HelpBox($"Добавьте в конфигурацию для {enemyText} в конфигурации его персонажей префабы самих персонажей", MessageType.Info);
+                return;
+            }
+
+            characterViews = characterViews.Distinct().ToList();
+            DrawPrefabs(characterViews);
+        }
+
         private void DrawPrefabs<T>(List<T> prefabs) where T : MonoBehaviour
         {
+            if (prefabs.Count == 0)
+            {
+                return;
+            }
+
             int itemCount = prefabs.Count;
             int selectedPrefabIndex = -1;
             List<GameObject> gameObjects = prefabs.Select(x => x.gameObject).ToList();
